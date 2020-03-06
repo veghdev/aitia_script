@@ -6,14 +6,14 @@ from inspect import currentframe
 
 class CtermInterface:
 
-    def __init__(self, cterm):
+    def __init__(self, app, path):
         try:
-            self.process = Popen([cterm, '-i', '-e'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            self.process = Popen([f'{path}/{app}', '-i', '-e'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
             ans = self.__read()
-            assert ans == 'hello', f'answer is incorrect, expected="hello", get="{ans}"'
+            assert ans == 'hello', 'answer is incorrect, expected="hello", get="{}"'.format(ans)
         except Exception as e:
-            raise Exception(
-                f'{ self.__class__.__name__}.{ currentframe().f_code.co_name}() { e.__class__.__name__}: {e}')
+            raise Exception('{}.{}() {}: {}'.format(
+                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
 
     def command(self, command, *params):
         try:
@@ -31,8 +31,11 @@ class CtermInterface:
                 final_ans = tmp
             return final_ans
         except Exception as e:
-            raise Exception(
-                f'{self.__class__.__name__}.{ currentframe().f_code.co_name}({command}) {e.__class__.__name__}: {e}')
+            if command.endswith('"app.abort"') and str(e).endswith('\'receiving data on socket failed, error 10054\''):
+                return {'status': 'ok'}
+            else:
+                raise Exception('{}.{}({}) {}: {}'.format(
+                    self.__class__.__name__, currentframe().f_code.co_name, command, e.__class__.__name__, e))
 
     def __read(self):
         ans = self.process.stdout.readline().decode()
@@ -50,7 +53,8 @@ class CtermInterface:
         final_ans = {'status': ans.split(sep='\n', maxsplit=1)[0]}
         if ans.split(sep='\n', maxsplit=1)[1].startswith('post')\
                 or ans.split(sep='\n', maxsplit=1)[1].startswith('send'):
-            final_ans['num'] = ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)[0][4:]
+            if ans.split(sep='\n', maxsplit=1)[1].startswith('post'):
+                    final_ans['num'] = ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)[0][4:]
             if len(ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)) == 2:
                 final_ans['value'] = ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)[1]
         else:
@@ -61,10 +65,10 @@ class CtermInterface:
         try:
             self.__write('quit')
             ans = self.__read()
-            assert ans == 'bye', f'answer is incorrect, expected="bye", get="{ans}"'
+            assert ans == 'bye', 'answer is incorrect, expected="bye", get="{}"'.format(ans)
         except Exception as e:
-            raise Exception(
-                f'{self.__class__.__name__}.{currentframe().f_code.co_name}() {e.__class__.__name__}: {e}')
+            raise Exception('{}.{}() {}: {}'.format(
+                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
         finally:
             self.process.stdin.close()
             self.process.terminate()
