@@ -1,4 +1,4 @@
-def is_class_variables_defined(class_object, *args):
+def is_class_attributes_defined(class_object, *args):
     missing_args = []
     for arg in args:
         if arg.startswith('__'):

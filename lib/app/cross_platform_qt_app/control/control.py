@@ -1,7 +1,7 @@
 from inspect import currentframe
 
 from cterm import CtermInterface
-from tools.class_tools.class_variables import is_class_variables_defined
+from tools.checking_tools.class_checking_tools import is_class_attributes_defined
 
 
 class Control:
@@ -54,7 +54,7 @@ class Control:
 
     def is_available(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             ans = self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'app.name')
             # print(ans) # todo logging
             return True
@@ -67,7 +67,7 @@ class Control:
 
     def start(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port', '__app', '__path')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port', '__app', '__path')
             self.__pid = self.__cterm_interface.command('pcreate', f'{self.__path}/{self.__app}', '-t', self.__port)
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -75,7 +75,7 @@ class Control:
 
     def stop(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'app.abort')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -83,7 +83,7 @@ class Control:
 
     def open_connection(self, direction, uri):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'connections.open', direction, uri)
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -91,7 +91,7 @@ class Control:
 
     def close_connection(self, direction, connection):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'connections.close', direction, connection)
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -99,7 +99,7 @@ class Control:
 
     def start_proc(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'app.startproc')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -107,7 +107,7 @@ class Control:
 
     def stop_proc(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'app.stopproc')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -115,7 +115,7 @@ class Control:
 
     def stop_proc_sync(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             while True:
                 ans = self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'app.stopprocsync')
                 if ans['value'] == 'ready':
@@ -126,7 +126,7 @@ class Control:
 
     def state_clear(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'state.clear')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -134,7 +134,7 @@ class Control:
 
     def state_flush(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'state.flush')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -142,8 +142,16 @@ class Control:
 
     def counters_clear(self):
         try:
-            is_class_variables_defined(self, '__cterm_interface', '__ip', '__port')
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
             self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'counters.clear')
+        except Exception as e:
+            raise Exception('{}.{}() {}: {}'.format(
+                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+
+    def save_config(self):
+        try:
+            is_class_attributes_defined(self, '__cterm_interface', '__ip', '__port')
+            self.__cterm_interface.command('send', f'{self.__ip}:{self.__port}', 'config.save')
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))

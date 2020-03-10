@@ -73,8 +73,3 @@ class CtermInterface:
             self.process.stdin.close()
             self.process.terminate()
             self.process.wait(timeout=3)
-
-
-
-
-

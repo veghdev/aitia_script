@@ -1,1 +1,1 @@
-from cterm.interface.interface import *
+from .interface import *
