@@ -279,6 +279,9 @@ try:
                     replace_version = 'Sga-7N CDR Viewer, v*** successfully started from command line.'
                     out_file_content = re.sub(version_regex, replace_version, out_file_content, 0)
                     ref_file_content = re.sub(version_regex, replace_version, ref_file_content, 0)
+                    regex_path = r"[a-zA-Z]:?(\\[a-z  A-Z0-9_.-]+)+\\?"
+                    out_file_content = re.sub(regex_path, r'\g<1>', out_file_content, 0)
+                    ref_file_content = re.sub(regex_path, r'\g<1>', ref_file_content, 0)
                     if out_file_content.strip() == ref_file_content.strip():
                         test_case_passed += 1
                         logger.log(f'{tab}{test_case} - {tab}{file}: PASSED', text_level='INFO',
