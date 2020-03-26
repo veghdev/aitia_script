@@ -2,6 +2,7 @@ import pathlib
 import sys
 program_path = str(pathlib.Path(sys.path[0]))
 program_name = pathlib.Path(__file__).stem
+program_version = '0.0.1'
 program_lib_path = str(pathlib.Path(f'{program_path}/../../../lib').resolve())
 sys.path.append(program_lib_path)
 
@@ -49,6 +50,7 @@ tab = '    '
 
 logger.log('options:', text_level='INFO', foreground_color='light blue')
 logger.log(f'{tab}program_name : {program_name}', text_level='INFO')
+logger.log(f'{tab}program_version : {program_version}', text_level='INFO')
 logger.log(f'{tab}program_path : {program_path}', text_level='INFO')
 logger.log(f'{tab}program_lib_path : {program_lib_path}', text_level='INFO')
 logger.log(f'{tab}log_level : {log_level}', text_level='INFO')
@@ -269,13 +271,14 @@ try:
                             ref_file_content = ref_file_handler.read()
                     finally:
                         ref_file_handler.close()
-                    date1_regex = r"\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2}"
-                    date2_regex = r"\d{4}.\d{2}.\d{2}. \d{2}:\d{2}:\d{2}"
-                    replace_string = "2000.01.01 00:00:00"
-                    out_file_content = re.sub(date1_regex, replace_string, out_file_content, 0)
-                    out_file_content = re.sub(date2_regex, replace_string, out_file_content, 0)
-                    ref_file_content = re.sub(date1_regex, replace_string, ref_file_content, 0)
-                    ref_file_content = re.sub(date2_regex, replace_string, ref_file_content, 0)
+                    date_regex = r"\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2}"
+                    replace_date = "2000.01.01 00:00:00"
+                    out_file_content = re.sub(date_regex, replace_date, out_file_content, 0)
+                    ref_file_content = re.sub(date_regex, replace_date, ref_file_content, 0)
+                    version_regex = r"Sga-7N CDR Viewer, v.*successfully started from command line."
+                    replace_version = 'Sga-7N CDR Viewer, v*** successfully started from command line.'
+                    out_file_content = re.sub(version_regex, replace_version, out_file_content, 0)
+                    ref_file_content = re.sub(version_regex, replace_version, ref_file_content, 0)
                     if out_file_content.strip() == ref_file_content.strip():
                         test_case_passed += 1
                         logger.log(f'{tab}{test_case} - {tab}{file}: PASSED', text_level='INFO',
