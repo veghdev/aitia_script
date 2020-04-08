@@ -2,13 +2,15 @@ import pathlib
 import sys
 program_path = str(pathlib.Path(sys.path[0]))
 program_name = pathlib.Path(__file__).stem
-program_version = '0.0.1'
-program_lib_path = str(pathlib.Path(f'{program_path}/../../../lib').resolve())
+program_version = '0.0.2'
+program_lib_path = str(pathlib.Path(program_path, '../../../lib').resolve())
+program_ext_path = str(pathlib.Path(program_path, '../../../ext').resolve())
 sys.path.append(program_lib_path)
+sys.path.append(program_ext_path)
 
 import shutil
 import os
-import yaml
+import pyyaml_5_3_1
 import subprocess
 import filecmp
 import re
@@ -21,13 +23,13 @@ from tools.config_tools.ini_config_tools import read_ini_file, write_ini_file, m
 
 # subroutines
 def resolve_path(o_path, o_name, make_path=False):
-    original = str(pathlib.Path(o_path + '/' + o_name))
+    original = str(pathlib.Path(o_path, o_name).resolve())
     if not os.path.exists(original):
-        new = str(pathlib.Path(o_path + '/' + '__' + o_name))
+        new = str(pathlib.Path(o_path, '__' + o_name).resolve())
         if os.path.exists(new):
             with open(new, 'r') as file_handler:
                 new = file_handler.read()
-                new = str(pathlib.Path(shared_test_files_path + '/' + new))
+                new = str(pathlib.Path(shared_test_files_path, new).resolve())
                 return {'path': new, 'o_name': o_name, 'o_path': original}
         else:
             if make_path:
@@ -39,10 +41,10 @@ def resolve_path(o_path, o_name, make_path=False):
 
 # parameters
 log_level = 'INFO'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-log_path = str(pathlib.Path(program_path + '/' + program_name))
-bin_path = str(pathlib.Path(program_path + '/' + '../bin'))
-test_cases_path = str(pathlib.Path(program_path + '/' + 'test_cases'))
-shared_test_files_path = str(pathlib.Path(program_path + '/' + 'shared_test_files'))
+log_path = str(pathlib.Path(program_path, program_name).resolve())
+bin_path = str(pathlib.Path(program_path, '../bin').resolve())
+test_cases_path = str(pathlib.Path(program_path, 'test_cases').resolve())
+shared_test_files_path = str(pathlib.Path(program_path, 'shared_test_files').resolve())
 
 # create logger
 logger = Logger(logger=program_name, log_level=log_level, log_file=log_path)
@@ -73,10 +75,10 @@ try:
         # test parameters
         logger.log(f'{tab}{test_case} - options:', text_level='DEBUG', foreground_color='light blue')
 
-        in_resolved = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), 'in')
-        out_resolved = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), 'out', make_path=True)
-        debug_resolved = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), 'debug', make_path=True)
-        ref_resolved = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), 'ref', make_path=True)
+        in_resolved = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'in')
+        out_resolved = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'out', make_path=True)
+        debug_resolved = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'debug', make_path=True)
+        ref_resolved = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'ref', make_path=True)
         if in_resolved['path'] != in_resolved['o_path']:
             logger.log(f'{tab}{test_case} - {tab}in_path : {in_resolved["path"]}'
                        f'(resolved from __{in_resolved["o_name"]})',
@@ -102,14 +104,14 @@ try:
         else:
             logger.log(f'{tab}{test_case} - {tab}ref_path : {ref_resolved["path"]}', text_level='DEBUG')
 
-        command_resolve = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), 'command.yaml')
+        command_resolve = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'command.yaml')
         if command_resolve['path'] != command_resolve['o_path']:
             logger.log(f'{tab}{test_case} - {tab}command_path : {command_resolve["path"]}'
                        f'(resolved from __{command_resolve["o_name"]})',
                        text_level='DEBUG', foreground_color='light cyan')
         else:
             logger.log(f'{tab}{test_case} - {tab}command_path : {command_resolve["path"]}', text_level='DEBUG')
-        command_yaml = yaml.load(open(file=command_resolve['path'], mode='r'), Loader=yaml.FullLoader)
+        command_yaml = pyyaml_5_3_1.load(open(file=command_resolve['path'], mode='r'), Loader=pyyaml_5_3_1.FullLoader)
 
         test_files = [
             'SgaCDRViewer.ini',
@@ -121,7 +123,7 @@ try:
             'sl.dat'
         ]
         for f_i in range(len(test_files)):
-            test_files[f_i] = resolve_path(str(pathlib.Path(test_cases_path + '/' + test_case)), test_files[f_i])
+            test_files[f_i] = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), test_files[f_i])
             if test_files[f_i]['path'] != test_files[f_i]['o_path']:
                 logger.log(f'{tab}{test_case} - {tab}test_file: {test_files[f_i]["path"]}'
                            f'(resolved from __{test_files[f_i]["o_name"]})',
@@ -134,10 +136,10 @@ try:
             'user': 'bssap',
             'password': 'Bssap01',
             'reason': 'testing',
-            'log': str(pathlib.Path(out_resolved['path'] + '/' + 'log.log')),
-            'filter': str(pathlib.Path(bin_path + '/' + 'testFilter.CdrFilt')),
+            'log': str(pathlib.Path(out_resolved['path'], 'log.log').resolve()),
+            'filter': str(pathlib.Path(bin_path, 'testFilter.CdrFilt').resolve()),
             'out_type': 'txt',
-            'out': str(pathlib.Path(out_resolved['path'] + '/' + 'out.txt'))
+            'out': str(pathlib.Path(out_resolved['path'], 'out.txt').resolve())
         }
         command_list = []
         for parameter in command_yaml['parameters']:
@@ -166,7 +168,7 @@ try:
 
         # remove previous test_files from bin and copy new ones
         for file in test_files:
-            bin_file = str(pathlib.Path(bin_path + '/' + file['o_name']))
+            bin_file = str(pathlib.Path(bin_path, file['o_name']).resolve())
             if os.path.exists(bin_file):
                 os.remove(bin_file)
             shutil.copy2(file['path'], bin_file)
@@ -185,7 +187,7 @@ try:
         sgaautho_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgaautho_name}*.log')]
         for log in sgaautho_logs:
             os.remove(str(log))
-        sgaautho_ini_file = str(pathlib.Path(bin_path + '/' + f'{sgaautho_name}.ini'))
+        sgaautho_ini_file = str(pathlib.Path(bin_path, sgaautho_name + '.ini').resolve())
         sgaautho_ini = read_ini_file(sgaautho_ini_file)
         sgaautho_ini = modify_ini_content(ini_content=sgaautho_ini, section='Advanced', parameter='sLogFilesPath',
                                           value='.')
@@ -200,7 +202,7 @@ try:
         sgacdrqueryserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgacdrqueryserver_name}*.log')]
         for log in sgacdrqueryserver_logs:
             os.remove(str(log))
-        sgacdrqueryserver_ini_file = str(pathlib.Path(bin_path + '/' + f'{sgacdrqueryserver_name}.ini'))
+        sgacdrqueryserver_ini_file = str(pathlib.Path(bin_path, sgacdrqueryserver_name + '.ini').resolve())
         sgacdrqueryserver_ini = read_ini_file(sgacdrqueryserver_ini_file)
         sgacdrqueryserver_ini = modify_ini_content(ini_content=sgacdrqueryserver_ini, section='Advanced',
                                                    parameter='sLogFilesPath', value='.')
@@ -219,33 +221,43 @@ try:
 
         # start sgacdrviewer
         sgacdrviewer_name = 'SgaCDRViewer'
-        sgacdrviewer = str(pathlib.Path(bin_path + '/' + sgacdrviewer_name + '.exe'))
+        sgacdrviewer = str(pathlib.Path(bin_path, sgacdrviewer_name + '.exe').resolve())
         # cterm.command('pcall', sgacdrviewer, *command_list)
         command_list.insert(0, sgacdrviewer)
         process = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.communicate()
 
         # stop sgacdrqueryserver
-        sgacdrqueryserver.stop()
+        # sgacdrqueryserver.stop()
+        cterm.command('pdelpid', sgacdrqueryserver._pid)
+        while True:
+            ans = cterm.command('ptestpid', sgacdrqueryserver._pid)
+            if ans['value'] == '0':
+                break
         sgacdrqueryserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgacdrqueryserver_name}*.log')]
         for log in sgacdrqueryserver_logs:
-            debug_file = str(pathlib.Path(debug_resolved['path'] + '/' + log.name))
+            debug_file = str(pathlib.Path(debug_resolved['path'], log.name).resolve())
             shutil.move(str(log), debug_file)
         logger.log(f'{tab}{test_case} - stop {sgacdrqueryserver_name}', text_level='DEBUG',
                    foreground_color='light blue')
 
         # stop sgaautho
-        sgaautho.stop()
+        # sgaautho.stop()
+        cterm.command('pdelpid', sgaautho._pid)
+        while True:
+            ans = cterm.command('ptestpid', sgaautho._pid)
+            if ans['value'] == '0':
+                break
         sgaautho_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgaautho_name}*.log')]
         for log in sgaautho_logs:
-            debug_file = str(pathlib.Path(debug_resolved['path'] + '/' + log.name))
+            debug_file = str(pathlib.Path(debug_resolved['path'], log.name).resolve())
             shutil.move(str(log), debug_file)
         logger.log(f'{tab}{test_case} - stop {sgaautho_name}', text_level='DEBUG', foreground_color='light blue')
 
         # move test_files from bin to debug folder
         for file in test_files:
-            bin_file = str(pathlib.Path(bin_path + '/' + file['o_name']))
-            debug_file = str(pathlib.Path(debug_resolved['path'] + '/' + file['o_name']))
+            bin_file = str(pathlib.Path(bin_path, file['o_name']).resolve())
+            debug_file = str(pathlib.Path(debug_resolved['path'], file['o_name']).resolve())
             if os.path.exists(bin_file):
                 shutil.move(bin_file, debug_file)
         logger.log(f'{tab}{test_case} - move test_files from bin_path to test_case_debug_path', text_level='DEBUG',
@@ -255,8 +267,8 @@ try:
         test_case_passed = 0
         test_case_failed = 0
         for file in os.listdir(out_resolved["path"]):
-            out_file = pathlib.Path(out_resolved["path"] + '/' + file)
-            ref_file = pathlib.Path(ref_resolved["path"] + '/' + file)
+            out_file = pathlib.Path(out_resolved["path"], file).resolve()
+            ref_file = pathlib.Path(ref_resolved["path"], file).resolve()
             if os.path.exists(ref_file):
                 if pathlib.Path(out_file).suffix == '.log':
                     out_file_content = None
@@ -304,7 +316,7 @@ try:
                 logger.log(f'{tab}{test_case} - {tab}{file}: FAILED (REF FILE DOES NOT EXISTS)', text_level='ERROR',
                            foreground_color='light red')
         for file in os.listdir(ref_resolved["path"]):
-            out_file = pathlib.Path(out_resolved["path"] + '/' + file)
+            out_file = pathlib.Path(out_resolved["path"], file).resolve()
             if not os.path.exists(out_file):
                 test_case_failed += 1
                 logger.log(f'{tab}{test_case} - {tab}{file}: FAILED (OUT FILE DOES NOT EXISTS)', text_level='ERROR',

@@ -1,0 +1,13 @@
+## [0.0.2] - 2020-04-08
+### Added
+- added pyyaml 5.3.1 to ext
+
+### Changed
+- simplify pathlib.Path usage
+
+### Fixed
+- fix sgaautho and sgacdrqueryserver closing - temporally kill them
+
+## [0.0.1] - 2020-03-26
+### Added
+- Initial release

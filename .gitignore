@@ -1,0 +1,7 @@
+**/__pycache__/**
+
+**/bin
+**/shared_test_files
+**/test_cases
+
+*.log
