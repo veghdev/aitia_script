@@ -1,0 +1,22 @@
+# j2-temp #
+{%- if flags.multiplatform %}
+{%- for item in config.app.platforms %}
+if program_platform == '{{ item.platform }}':
+    {%- if item.ext.cterm is defined and item.ext.cterm != 'None' %}
+    cterm_path = pathlib.Path.joinpath(bin_path, '{{ item.ext.cterm }}').resolve()
+    {%- endif %}
+    {%- if item.ext.adg is defined and item.ext.adg != 'None' %}
+    adg_path = pathlib.Path.joinpath(bin_path, '{{ item.ext.adg }}').resolve()
+    {%- endif %}
+{%- endfor %}
+{%- else %}
+{%- for item in config.app.platforms %}
+{%- if item.ext.cterm is defined and item.ext.cterm != 'None' %}
+cterm_path = pathlib.Path.joinpath(bin_path, '{{ item.ext.cterm }}').resolve()
+{%- endif %}
+{%- if item.ext.adg is defined and item.ext.adg != 'None' %}
+adg_path = pathlib.Path.joinpath(bin_path, '{{ item.ext.adg }}').resolve()
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+# j2-temp #

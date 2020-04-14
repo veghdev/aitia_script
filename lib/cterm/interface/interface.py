@@ -1,25 +1,30 @@
-from subprocess import Popen, PIPE
-from urllib.parse import unquote
-from os import linesep
-from inspect import currentframe
+import inspect
+import pathlib
 
-from tools.logging_tools.logger import Logger
+import subprocess
+import urllib
+import os
+
+import logging
 
 
 class CtermInterface:
-    _logger = None
-    _process = None
 
-    def __init__(self, app, path, logger=None):
+    _logger = None
+
+    def __init__(self, cterm):
         try:
-            if logger is not None:
-                self._set_logger(logger)
-            self._process = Popen([f'{path}/{app}', '-i', '-e'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            self._logger = logging.getLogger(__name__)
+            cterm = pathlib.Path(cterm).resolve()
+            self._process = subprocess.Popen([f'{cterm}', '-i', '-e'],
+                                             stdin=subprocess.PIPE,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE)
             ans = self._read()
             assert ans == 'hello', 'answer is incorrect, expected="hello", get="{}"'.format(ans)
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
-                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+                self.__class__.__name__, inspect.currentframe().f_code.co_name, e.__class__.__name__, e))
 
     def command(self, command, *params):
         try:
@@ -32,7 +37,7 @@ class CtermInterface:
             if command.startswith('post'):
                 ans = self._read()
                 tmp = self._parse_ans(ans)
-                assert final_ans['num'] == tmp['num'], 'num is incorrect, expected="{}", get="{}"'\
+                assert final_ans['num'] == tmp['num'], 'num is incorrect, expected="{}", get="{}"' \
                     .format(final_ans['num'], tmp['num'])
                 final_ans = tmp
             return final_ans
@@ -41,20 +46,23 @@ class CtermInterface:
                 return {'status': 'ok'}
             else:
                 raise Exception('{}.{}({}) {}: {}'.format(
-                    self.__class__.__name__, currentframe().f_code.co_name, command, e.__class__.__name__, e))
+                    self.__class__.__name__, inspect.currentframe().f_code.co_name, command, e.__class__.__name__, e))
 
     def _read(self):
         ans = self._process.stdout.readline().decode()
         assert ans is not None, 'answer is empty'
-        self._log('read: {}'.format(ans))
-        final_ans = unquote(ans)
+        if 'verbose' in dir(self._logger):
+            self._logger.verbose('read: {}'.format(ans))
+        final_ans = urllib.parse.unquote(ans)
         final_ans = final_ans.rstrip()
-        self._log('ans: {}'.format(final_ans))
+        if 'verbose' in dir(self._logger):
+            self._logger.verbose('ans: {}'.format(final_ans))
         return final_ans
 
     def _write(self, command):
-        self._log('write: {}'.format(bytes(command + linesep, encoding='utf-8')))
-        self._process.stdin.write(bytes(command + linesep, encoding='utf-8'))
+        if 'verbose' in dir(self._logger):
+            self._logger.verbose('write: {}'.format(bytes(command + os.linesep, encoding='utf-8')))
+        self._process.stdin.write(bytes(command + os.linesep, encoding='utf-8'))
         self._process.stdin.flush()
 
     def _parse_ans(self, ans):
@@ -63,7 +71,7 @@ class CtermInterface:
         if len(ans.split(sep='\n', maxsplit=1)) == 1:
             final_ans['value'] = final_ans['status']
         else:
-            if ans.split(sep='\n', maxsplit=1)[1].startswith('post')\
+            if ans.split(sep='\n', maxsplit=1)[1].startswith('post') \
                     or ans.split(sep='\n', maxsplit=1)[1].startswith('send'):
                 if ans.split(sep='\n', maxsplit=1)[1].startswith('post'):
                     final_ans['num'] = ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)[0][4:]
@@ -71,22 +79,9 @@ class CtermInterface:
                     final_ans['value'] = ans.split(sep='\n', maxsplit=1)[1].split(sep=' ', maxsplit=1)[1]
             else:
                 final_ans['value'] = ans.split(sep='\n', maxsplit=1)[1]
-        self._log('parsed ans: {}'.format(final_ans))
+        if 'verbose' in dir(self._logger):
+            self._logger.verbose('parsed ans: {}'.format(final_ans))
         return final_ans
-
-    def _set_logger(self, logger):
-        try:
-            assert isinstance(logger, Logger), \
-                'argument:logger is incorrect, expected="{}", get="{}"' \
-                .format(Logger, type(logger))
-            self._logger = logger
-        except Exception as e:
-            raise Exception('{}.{}() {}: {}'.format(
-                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
-
-    def _log(self, text):
-        if self._logger is not None:
-            self._logger.log('{} - {}'.format(self.__class__.__name__, text), text_level='DEBUG')
 
     def __del__(self):
         try:
@@ -96,7 +91,7 @@ class CtermInterface:
             assert ans == 'bye', 'answer is incorrect, expected="bye", get="{}"'.format(ans)
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
-                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+                self.__class__.__name__, inspect.currentframe().f_code.co_name, e.__class__.__name__, e))
         finally:
             self._process.stdin.close()
             self._process.terminate()

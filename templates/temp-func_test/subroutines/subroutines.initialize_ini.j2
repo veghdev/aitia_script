@@ -1,0 +1,14 @@
+def initialize_ini():
+    if app_ini_path.exists():
+        app_ini_path.unlink()
+    shutil.copy2(base_ini_path, app_ini_path)
+
+{%- if flags.global_ini_config %}
+
+    # set global ini config
+    ini = Ini(app_ini_path)
+    {%- for item in config.app_test.app_config.ini_config.global %}
+    ini.modify_parameter({{ item }})
+    {%- endfor %}
+    ini.write_content_to_file()
+{%- endif %}

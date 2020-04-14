@@ -1,0 +1,17 @@
+bin_path = pathlib.Path.joinpath(program_path.parent, '{{ config.app.dir }}').resolve()
+app_name = '{{ config.app.name }}'
+app_port = find_free_port()
+{%- if flags.multiplatform %}
+{%- for item in config.app.platforms %}
+if program_platform == '{{ item.platform }}':
+    app_path = pathlib.Path.joinpath(bin_path, '{{ item.executable }}').resolve()
+{%- endfor %}
+{%- else %}
+{%- for item in config.app.platforms %}
+app_path = pathlib.Path.joinpath(bin_path, '{{ item.executable }}').resolve()
+{%- endfor %}
+{%- endif %}
+app_ini_path = pathlib.Path.joinpath(bin_path, app_path.stem + '.ini').resolve()
+base_ini_path = pathlib.Path.joinpath(program_path.parent, '{{ config.app.ini.dir }}', app_name + '.ini').resolve()
+report_path = pathlib.Path.joinpath(program_path.parent, 'report', time.strftime("%Y%m%d_%H%M%S", time.localtime())).resolve()
+report_level = 'DEBUG'

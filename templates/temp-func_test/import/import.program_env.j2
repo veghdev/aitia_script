@@ -1,0 +1,12 @@
+import sys
+import pathlib
+{%- if flags.multiplatform %}
+import platform
+{%- endif %}
+program_path = pathlib.Path(__file__)
+program_lib_path = pathlib.Path(program_path.parent, '{{ config.env.lib }}').resolve()
+program_version = '{{ config.app_test.version }}'
+{%- if flags.multiplatform %}
+program_platform = platform.system()
+{%- endif %}
+sys.path.append(str(program_lib_path))

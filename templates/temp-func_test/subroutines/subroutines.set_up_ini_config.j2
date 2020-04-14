@@ -1,0 +1,36 @@
+# j2-temp #
+def set_up_ini_config():
+    ini = Ini(app_ini_path)
+    ans = list()
+
+    def ans_conditional_append(ans_dict):
+        ans_already_exists = False
+        for item in ans:
+            if ans_dict['section'] == item['section'] and ans_dict['parameter'] == item['parameter']:
+                ans_already_exists = True
+                break
+        if not ans_already_exists:
+            ans.append(ans_dict)
+
+    {%- if flags.file_ini_config %}
+
+    # set file ini config
+    {%- for item in config.app_test.app_config.ini_config.file %}
+    ans_conditional_append(ini.modify_parameter({{ item }}))
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if flags.specific_file_ini_config %}
+
+    # set specific_file ini config
+    {%- if flags.file_ini_config %}
+    if test_file_in.name in specific_file_ini_config:
+        ans_conditional_append(ini.modify_parameter(*specific_file_ini_config[test_file_in.name]))
+    {%- else %}
+    ans_conditional_append(ini.modify_parameter(*specific_file_ini_config[test_file_in.name]))
+    {%- endif %}
+    {%- endif %}
+
+    ini.write_content_to_file()
+    return ans
+# j2-temp #

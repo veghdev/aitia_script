@@ -1,0 +1,20 @@
+# j2-temp #
+{% extends 'main/main.processing.parent.j2' %}
+        {%- block inter_initialize_app %}
+        if test_file_in.name in specific_file_ini_config:
+            if app.is_running():
+                stop_app()
+            modified_ini_config = set_up_ini_config()
+        if not app.is_running():
+            initialize_app()
+        {%- endblock %}
+        {%- block inter_stop_app %}
+        if test_file_in.name in specific_file_ini_config:
+            stop_app()
+            restore_ini_config(modified_ini_config)
+        {%- endblock %}
+{%- block post_stop_app %}
+if app.is_running():
+    stop_app()
+{%- endblock %}
+# j2-temp #

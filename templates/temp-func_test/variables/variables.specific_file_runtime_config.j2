@@ -1,0 +1,6 @@
+specific_file_runtime_config = {
+{%- for item in config.app_test.app_config.runtime_config.specific_file %}
+    '{{ item }}': [{{ config.app_test.app_config.runtime_config.specific_file[item] }}]
+    {{- "," if not loop.last }}
+{%- endfor %}
+}

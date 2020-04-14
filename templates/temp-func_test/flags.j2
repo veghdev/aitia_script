@@ -1,0 +1,91 @@
+
+
+{% if config.app.platforms | length > 1 %}
+    {% set multiplatform = true %}
+{% else %}
+    {% set multiplatform = false %}
+{% endif %}
+
+
+
+
+{% if uri_config.input | length > 0 %}
+    {% set uri_input = true %}
+{% else %}
+    {% set uri_input = false %}
+{% endif %}
+
+{% if uri_config.output | length > 0 %}
+    {% set uri_output = true %}
+{% else %}
+    {% set uri_output = false %}
+{% endif %}
+
+
+
+
+{% if config.app_test.processing.test_files_to_skip is defined and config.app_test.processing.test_files_to_skip != 'None' %}
+    {% set test_files_to_skip = true %}
+{% else %}
+    {% set test_files_to_skip = false %}
+{% endif %}
+
+
+{% if config.app_test.processing.preprocessing.code is defined and config.app_test.processing.preprocessing.code != 'None' %}
+    {% set preprocessing = true %}
+{% else %}
+    {% set preprocessing = false %}
+{% endif %}
+
+{% if config.app_test.processing.postprocessing.code is defined and config.app_test.processing.postprocessing.code != 'None' %}
+    {% set postprocessing = true %}
+{% else %}
+    {% set postprocessing = false %}
+{% endif %}
+
+
+
+
+{% if config.app_test.app_config.ini_config.global is defined and config.app_test.app_config.ini_config.global != 'None' %}
+    {% set global_ini_config = true %}
+{% else %}
+    {% set global_ini_config = false %}
+{% endif %}
+
+{% if config.app_test.app_config.ini_config.file is defined and config.app_test.app_config.ini_config.file != 'None' %}
+    {% set file_ini_config = true %}
+{% else %}
+    {% set file_ini_config = false %}
+{% endif %}
+
+{% if config.app_test.app_config.ini_config.specific_file is defined and config.app_test.app_config.ini_config.specific_file != 'None' %}
+    {% set specific_file_ini_config = true %}
+{% else %}
+    {% set specific_file_ini_config = false %}
+{% endif %}
+
+
+{% if config.app_test.app_config.runtime_config.global is defined and config.app_test.app_config.runtime_config.global != 'None' %}
+    {% set global_runtime_config = true %}
+{% else %}
+    {% set global_runtime_config = false %}
+{% endif %}
+
+{% if config.app_test.app_config.runtime_config.file is defined and config.app_test.app_config.runtime_config.file != 'None' %}
+    {% set file_runtime_config = true %}
+{% else %}
+    {% set file_runtime_config = false %}
+{% endif %}
+
+{% if config.app_test.app_config.runtime_config.specific_file is defined and config.app_test.app_config.runtime_config.specific_file != 'None' %}
+    {% set specific_file_runtime_config = true %}
+{% else %}
+    {% set specific_file_runtime_config = false %}
+{% endif %}
+
+
+{% if config.app_test.app_config.initialize_commands is defined and config.app_test.app_config.initialize_commands != 'None' %}
+    {% set initialize_commands = true %}
+{% else %}
+    {% set initialize_commands = false %}
+{% endif %}

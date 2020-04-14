@@ -1,0 +1,11 @@
+# j2-temp #
+{%- if flags.file_ini_config %}
+{% include 'main/main.processing.file_ini_config.j2'%}
+{%- endif %}
+{%- if not flags.file_ini_config and not flags.specific_file_ini_config %}
+{% include 'main/main.processing.not-file-and-not-specific_file_ini_config.j2'%}
+{%- endif %}
+{%- if not flags.file_ini_config and flags.specific_file_ini_config %}
+{% include 'main/main.processing.not-file-and-specific_file_ini_config.j2'%}
+{%- endif %}
+# j2-temp #

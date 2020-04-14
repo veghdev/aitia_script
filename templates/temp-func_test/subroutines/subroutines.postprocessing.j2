@@ -1,0 +1,9 @@
+# j2-temp #
+def postprocessing():
+    {%- set lines = config.app_test.processing.postprocessing.code.split('\n') %}
+    {%- for line in lines %}
+    {%- if line != '' %}
+    {{ line }}
+    {%- endif %}
+    {%- endfor %}
+# j2-temp #

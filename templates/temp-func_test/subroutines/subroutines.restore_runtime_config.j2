@@ -1,0 +1,5 @@
+# j2-temp #
+def restore_runtime_config(changelist):
+    for item in changelist:
+        app.set_config(item['section'], item['parameter'], item['prev_value'])
+# j2-temp #

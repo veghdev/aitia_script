@@ -1,0 +1,86 @@
+{% include 'subroutines/subroutines.find_free_port.j2' %}
+
+
+{% include 'subroutines/subroutines.initialize_ini.j2' %}
+
+
+{% include 'subroutines/subroutines.clean.j2' %}
+
+
+{%- if flags.preprocessing %}
+
+
+{% include 'subroutines/subroutines.preprocessing.j2' %}
+{%- endif %}
+
+
+{%- if flags.file_ini_config or flags.specific_file_ini_config %}
+
+
+{% include 'subroutines/subroutines.set_up_ini_config.j2' %}
+{%- endif %}
+
+
+{% include 'subroutines/subroutines.initialize_app.j2' %}
+
+
+{%- if flags.uri_input %}
+
+
+{% include 'subroutines/subroutines.configure_input.j2' %}
+{%- endif %}
+
+
+{%- if flags.uri_output %}
+
+
+{% include 'subroutines/subroutines.configure_output.j2' %}
+{%- endif %}
+
+
+{%- if flags.file_runtime_config or flags.specific_file_runtime_config %}
+
+
+{% include 'subroutines/subroutines.set_up_runtime_config.j2' %}
+{%- endif %}
+
+
+{%- if flags.file_runtime_config or flags.specific_file_runtime_config %}
+
+
+{% include 'subroutines/subroutines.restore_runtime_config.j2' %}
+{%- endif %}
+
+
+{%- if flags.uri_input %}
+
+
+{% include 'subroutines/subroutines.deconfigure_input.j2' %}
+{%- endif %}
+
+
+{%- if flags.uri_output %}
+
+
+{% include 'subroutines/subroutines.deconfigure_output.j2' %}
+{%- endif %}
+
+
+{% include 'subroutines/subroutines.stop_app.j2' %}
+
+
+{%- if flags.file_ini_config or flags.specific_file_ini_config %}
+
+
+{% include 'subroutines/subroutines.restore_ini_config.j2' %}
+{%- endif %}
+
+
+{%- if flags.postprocessing %}
+
+
+{% include 'subroutines/subroutines.postprocessing.j2' %}
+{%- endif %}
+
+
+{% include 'subroutines/subroutines.clean_ini.j2' %}

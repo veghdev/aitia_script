@@ -1,0 +1,6 @@
+# j2-temp #
+def configure_input():
+    {%- for item in uri_config.input %}
+    app.open_connection(direction='in', uri={{ item.sub_uri }})
+    {%- endfor %}
+# j2-temp #

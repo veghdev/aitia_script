@@ -1,0 +1,18 @@
+def initialize_app():
+    app.start()
+
+{%- if flags.initialize_commands %}
+
+    # send initialize command
+    {%- for item in config.app_test.app_config.initialize_commands %}
+    app.send_command({{ item }})
+    {%- endfor %}
+{%- endif %}
+
+{%- if flags.global_runtime_config %}
+
+    # set global runtime config
+    {%- for item in config.app_test.app_config.runtime_config.global %}
+    app.set_config({{ item }})
+    {%- endfor %}
+{%- endif %}

@@ -1,0 +1,18 @@
+{% include 'variables/variables.base.j2' %}
+
+{% include 'variables/variables.ext.j2' %}
+
+{%- if flags.test_files_to_skip %}
+
+{% include 'variables/variables.test_files_to_skip.j2' %}
+{%- endif %}
+
+{%- if flags.specific_file_ini_config %}
+
+{% include 'variables/variables.specific_file_ini_config.j2' %}
+{%- endif %}
+
+{%- if flags.specific_file_runtime_config %}
+
+{% include 'variables/variables.specific_file_runtime_config.j2' %}
+{%- endif %}

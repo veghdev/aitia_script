@@ -1,0 +1,36 @@
+# j2-temp #
+def set_up_runtime_config():
+    ans = list()
+
+    def ans_conditional_append(ans_dict):
+        ans_already_exists = False
+        for item in ans:
+            if ans_dict['section'] == item['section'] and ans_dict['parameter'] == item['parameter']:
+                ans_already_exists = True
+                break
+        if not ans_already_exists:
+            ans.append(ans_dict)
+
+    {%- if flags.file_runtime_config %}
+
+    # set file runtime config
+    {%- for item in config.app_test.app_config.runtime_config.file %}
+    ans_conditional_append(app.set_config({{ item }}))
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if flags.specific_file_runtime_config %}
+
+    # set specific_file runtime config
+    {%- if flags.file_runtime_config %}
+    if test_file_in.name in specific_file_runtime_config:
+        ans_conditional_append(app.set_config(*specific_file_runtime_config[test_file_in.name]))
+    {%- else %}
+    ans_conditional_append(app.set_config(*specific_file_runtime_config[test_file_in.name]))
+    {%- endif %}
+    {%- endif %}
+
+    app.save_config()
+
+    return ans
+# j2-temp #
