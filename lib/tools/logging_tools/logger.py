@@ -1,7 +1,7 @@
+import inspect
 import logging
-from inspect import currentframe
+import sys
 from platform import system
-from datetime import date
 
 if "win" in system().lower():
     from ctypes import windll
@@ -9,126 +9,133 @@ if "win" in system().lower():
     console.SetConsoleMode(console.GetStdHandle(-11), 7)
 
 
-class Logger:
+VERBOSE = 'VERBOSE'
+DEBUG = 'DEBUG'
+INFO = 'INFO'
+WARNING = 'WARNING'
+ERROR = 'ERROR'
+CRITICAL = 'CRITICAL'
 
-    __logger = None
-    __log_level = None
-    __log_file = None
-    __timestamp = None
-    __foreground_color = None
-    __background_color = None
 
-    def __init__(self,
-                 logger='logger',
-                 log_level='INFO',
-                 log_file=None,
-                 timestamp=True,
-                 foreground_color=None,
-                 background_color=None):
-        try:
-            self.set__logger(logger)
-            self.set__log_level(log_level)
-            self.set__log_file(log_file)
-            self.set__timestamp(timestamp)
-            self.set__foreground_color(foreground_color)
-            self.set__background_color(background_color)
+class Formatter(logging.Formatter):
+    _params = {
+        VERBOSE:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'black',
+                'foreground_color': 'light black'
+            },
+        DEBUG:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'black',
+                'foreground_color': 'white'
+            },
+        INFO:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'black',
+                'foreground_color': 'light white'
+            },
+        WARNING:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'black',
+                'foreground_color': 'light yellow'
+            },
+        ERROR:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'black',
+                'foreground_color': 'light red'
+            },
+        CRITICAL:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True,
+                'background_color': 'red',
+                'foreground_color': 'light white'
+            }
+    }
 
-        except Exception as e:
-            raise Exception('{}.{}() {}: {}'.format(
-                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+    _fmts = {
+        VERBOSE: '',
+        DEBUG: '',
+        INFO: '',
+        WARNING: '',
+        ERROR: '',
+        CRITICAL: ''
+    }
 
-    def set__logger(self, logger):
-        self.__logger = logger
+    def __init__(self):
+        self._fmts['VERBOSE'] = self._get_formatter('VERBOSE')
+        super().__init__(fmt='%(msg)s', datefmt='%Y.%m.%d %H:%M:%S', style='%')
 
-    def set__log_level(self, log_level):
-        self.__log_level = log_level
+    def format(self, record):
 
-    def set__log_file(self, log_file):
-        self.__log_file = log_file
+        _original_fmt = self._style._fmt
 
-    def set__timestamp(self, timestamp):
-        self.__timestamp = timestamp
+        if record.levelno == logging.VERBOSE:
+            self._style._fmt = self._fmts[VERBOSE]
+        elif record.levelno == logging.DEBUG:
+            self._style._fmt = self._fmts[DEBUG]
+        elif record.levelno == logging.INFO:
+            self._style._fmt = self._fmts[INFO]
+        elif record.levelno == logging.WARNING:
+            self._style._fmt = self._fmts[WARNING]
+        elif record.levelno == logging.ERROR:
+            self._style._fmt = self._fmts[ERROR]
+        elif record.levelno == logging.CRITICAL:
+            self._style._fmt = self._fmts[CRITICAL]
+        else:
+            self._style._fmt = _original_fmt
 
-    def set__foreground_color(self, foreground_color):
-        self.__foreground_color = foreground_color
+        return logging.Formatter.format(self, record)
 
-    def set__background_color(self, background_color):
-        self.__background_color = background_color
+    def _get_formatter(self, level, **new_params):
+        tmp = dict()
+        tmp.update(self._params[level])
+        for param in tmp:
+            if param in new_params:
+                tmp[param] = new_params[param]
 
-    def log(self,
-            text,
-            text_level='INFO',
-            logger='default',
-            log_level='default',
-            log_file='default',
-            timestamp='default',
-            foreground_color='default',
-            background_color='default'):
-        try:
-            if logger == 'default':
-                logger = self.__logger
-            if log_level == 'default':
-                log_level = self.__log_level
-            if log_file == 'default':
-                log_file = self.__log_file
-            if timestamp == 'default':
-                timestamp = self.__timestamp
-            if foreground_color == 'default':
-                foreground_color = self.__foreground_color
-            if background_color == 'default':
-                background_color = self.__background_color
-
-            log = self.__create_logger(logger, log_level, log_file, timestamp, foreground_color, background_color)
-            if text_level == 'DEBUG':
-                log.debug('   ' + ' - ' + text)
-            if text_level == 'INFO':
-                log.info('    ' + ' - ' + text)
-            if text_level == 'WARNING':
-                log.warning(' ' + ' - ' + text)
-            if text_level == 'ERROR':
-                log.error('   ' + ' - ' + text)
-            if text_level == 'CRITICAL':
-                log.critical(' - ' + text)
-            log.handlers.clear()
-
-        except Exception as e:
-            raise Exception('{}.{}() {}: {}'.format(
-                self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
-
-    def __create_logger(self, logger, log_level, log_file, timestamp, foreground_color, background_color):
-        log = logging.getLogger(logger)
-        log.setLevel(logging.getLevelName(log_level))
-
-        stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(self.__create_formatter(timestamp, foreground_color, background_color))
-        log.addHandler(stream_handler)
-
-        if log_file is not None:
-            file_name = log_file + date.today().strftime("_%Y%m%d.log")
-            file_handler = logging.FileHandler(file_name)
-            file_handler.setFormatter(self.__create_formatter(timestamp, None, None))
-            log.addHandler(file_handler)
-
-        return log
-
-    def __create_formatter(self, timestamp, foreground_color, background_color):
         formatter = ''
-        if foreground_color is not None:
-            formatter = formatter + self.__get_foreground_color(foreground_color)
-        if background_color is not None:
-            formatter = formatter + self.__get_background_color(background_color)
-        if timestamp is True:
-            formatter = formatter + '%(asctime)s - '
-        formatter = formatter + '%(name)s - '
-        formatter = formatter + '%(levelname)s'
-        formatter = formatter + '%(message)s'
-        if foreground_color is not None or background_color is not None:
-            formatter = formatter + '\033[;1;0m'
-        formatter = logging.Formatter(formatter)
+
+        if tmp['log_timestamp']:
+            formatter += '%(asctime)s.%(msecs)03d'
+        if tmp['log_levelname']:
+            formatter += ' - %(levelname)-8s'
+        if tmp['log_name']:
+            formatter += ' - %(name)s'
+
+        if formatter == '':
+            formatter += '%(msg)s'
+        else:
+            formatter += ' - %(msg)s'
+
+        if tmp['foreground_color'] is not None:
+            formatter = self._get_foreground_color(tmp['foreground_color']) + formatter
+        if tmp['background_color'] is not None:
+            formatter = self._get_background_color(tmp['background_color']) + formatter
+        if tmp['foreground_color'] is not None or tmp['background_color'] is not None:
+            formatter += self._get_foreground_color('reset')
+
         return formatter
 
-    def __get_foreground_color(self, color):
-        colors = {
+    def _get_foreground_color(self, color):
+        foreground_colors = {
+            'reset': '\x1b[0m',
             'black': '\x1b[30m',
             'light black': '\x1b[90m',
             'red': '\x1b[31m',
@@ -136,7 +143,7 @@ class Logger:
             'green': '\x1b[32m',
             'light green': '\x1b[92m',
             'yellow': '\x1b[33m',
-            'light yellow': '\x1b93m',
+            'light yellow': '\x1b[93m',
             'blue': '\x1b[34m',
             'light blue': '\x1b[94m',
             'magenta': '\x1b[35m',
@@ -146,10 +153,11 @@ class Logger:
             'white': '\x1b[37m',
             'light white': '\x1b[97m'
         }
-        return colors[color]
+        return foreground_colors[color]
 
-    def __get_background_color(self, color):
-        colors = {
+    def _get_background_color(self, color):
+        background_colors = {
+            'reset': '\x1b[0m',
             'black': '\x1b[40m',
             'light black': '\x1b[100m',
             'red': '\x1b[41m',
@@ -167,4 +175,145 @@ class Logger:
             'white': '\x1b[47m',
             'light white': '\x1b[107m'
         }
-        return colors[color]
+        return background_colors[color]
+
+
+class Logger:
+
+    def __init__(self, name, level='INFO'):
+        self._set_root_logger()
+        self.level = level
+        self._logger = logging.getLogger(name)
+
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, value):
+        self._root.setLevel(logging.getLevelName(value))
+
+    def _set_root_logger(self):
+        self._root = logging.getLogger()
+        logging.VERBOSE = 5
+        logging.addLevelName(logging.VERBOSE, VERBOSE)
+        logging.Logger.verbose = lambda inst, msg, *args, **kwargs: inst.log(logging.VERBOSE, msg, *args, **kwargs)
+        logging.verbose = lambda msg, *args, **kwargs: logging.log(logging.VERBOSE, msg, *args, **kwargs)
+
+        self._fmt = Formatter()
+        self._sh = logging.StreamHandler(sys.stdout)
+        self._sh.setFormatter(self._fmt)
+        self._root.addHandler(self._sh)
+
+    def _log(self, level, msg, **new_params):
+        try:
+            base_fmt = self._fmt._fmts[level]
+            self._fmt._fmts[level] = self._fmt._get_formatter(level, **new_params)
+            if level == VERBOSE:
+                self._logger.verbose(msg)
+            elif level == DEBUG:
+                self._logger.debug(msg)
+            elif level == INFO:
+                self._logger.info(msg)
+            elif level == WARNING:
+                self._logger.warning(msg)
+            elif level == ERROR:
+                self._logger.error(msg)
+            elif level == CRITICAL:
+                self._logger.critical(msg)
+            else:
+                pass
+            self._fmt._fmts[level] = base_fmt
+        except Exception as e:
+            raise Exception('{}.{}() {}: {}'.format(
+                self.__class__.__name__, inspect.currentframe().f_code.co_name, e.__class__.__name__, e))
+
+    def verbose(self, msg: str,
+                log_timestamp: bool = None,
+                log_levelname: bool = None,
+                log_name: bool = None,
+                background_color: str = None,
+                foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=VERBOSE, msg=msg, **new_params)
+
+    def debug(self, msg: str,
+              log_timestamp: bool = None,
+              log_levelname: bool = None,
+              log_name: bool = None,
+              background_color: str = None,
+              foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=DEBUG, msg=msg, **new_params)
+
+    def info(self, msg: str,
+             log_timestamp: bool = None,
+             log_levelname: bool = None,
+             log_name: bool = None,
+             background_color: str = None,
+             foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=INFO, msg=msg, **new_params)
+
+    def warning(self, msg: str,
+             log_timestamp: bool = None,
+             log_levelname: bool = None,
+             log_name: bool = None,
+             background_color: str = None,
+             foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=WARNING, msg=msg, **new_params)
+
+    def error(self, msg: str,
+             log_timestamp: bool = None,
+             log_levelname: bool = None,
+             log_name: bool = None,
+             background_color: str = None,
+             foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=ERROR, msg=msg, **new_params)
+
+    def critical(self, msg: str,
+             log_timestamp: bool = None,
+             log_levelname: bool = None,
+             log_name: bool = None,
+             background_color: str = None,
+             foreground_color: str = None) -> None:
+        arguments = locals()
+        new_params = dict()
+        for key in arguments.keys():
+            if key == 'self' or key == 'myframe' or key == 'msg':
+                continue
+            if arguments[key] is not None:
+                new_params.update({key: arguments[key]})
+        self._log(level=CRITICAL, msg=msg, **new_params)
