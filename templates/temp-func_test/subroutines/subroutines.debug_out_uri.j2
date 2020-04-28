@@ -1,0 +1,12 @@
+# j2-temp #
+def debug_out_uri(src, dst):
+    import subprocess
+    command = [
+        str(adg_path),
+        '-i', str(src),
+        '-o', str(dst),
+        'bypass'
+    ]
+    p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.communicate()
+# j2-temp #

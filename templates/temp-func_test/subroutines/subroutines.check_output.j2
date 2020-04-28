@@ -1,96 +1,170 @@
 # j2-temp #
-{%- macro check(item) %}
-out_file = resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix'])
-ref_file = resolve_path(program_path.parent, '_ref' + {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix'])
-
-if out_file.exists():
-    if ref_file.exists():
-         if filecmp.cmp(out_file, ref_file):
-            {%- if in_uris | length > 1 %}
-            {%- if not flags.in.uri__optional %}
-            if input_file not in results['FAILED']:
-                results['PASSED'][input_file] = result
-                logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
-            {%- elif flags.in.uri__optional and flags.in.uri__different__optional %}
-            if input_file not in results['FAILED']:
-                results['PASSED'][input_file] = result
-                logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
-            {%- endif  %}
-            {%- else  %}
-            results['PASSED'][input_file] = result
-            logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
-            {%- endif %}
-         else:
-            results['FAILED'][input_file] = result
-            logger.error('   FAILED: {} - content does not equal'.format(os.path.relpath(out_file, program_path.parent)))
-    else:
-        results['FAILED'][input_file] = result
-        logger.error('   FAILED: {} - ref does not exist: {}'.format(os.path.relpath(out_file, program_path.parent), os.path.relpath(ref_file, program_path.parent)))
-else:
-    results['FAILED'][input_file] = result
-    logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out_file, program_path.parent)))
-{%- endmacro %}
-# j2-temp #
 def check_output():
-    {%- if flags.out.uri__exists %}
-    {%- if flags.out.uri__validate%}
-    {%- if out_uris | length > 1%}
-    for out_uri in out_uris:
-        {%- if flags.out.uri__different__validate%}
-        if out_uri['validate']:
-            {{- check('out_uri') | indent(12, True) }}
-        {%- else %}
-        {%- if flags.out.uri__validate%}
-        {{- check('out_uri') | indent(8, True) }}
-        {%- endif %}
-        {%- endif %}
-    {%- else %}
-    {{- check('out_uri') | indent(4, True) }}
-    {%- endif %}
-    {%- endif %}
-    {%- endif %}
+    passed = True
 
-	{%- if flags.out.geo_csv__exists %}
-    {{- check('out_geo_csv') | indent(4, True) }}
-    {%- endif %}
-
-    {%- if flags.out.har__exists %}
-    {{- check('out_har') | indent(4, True) }}
-    {%- endif %}
-	
-	{%- if flags.out.s1ap_dump__exists %}
-    {{- check('out_s1ap_dump') | indent(4, True) }}
-    {%- endif %}
-
-    {%- if flags.out.cdr__exists %}
-    def dircmp(out, ref):
+    def fcmp(output, ref):
         equals = True
-        cmp = filecmp.dircmp(out, ref)
-        if cmp.diff_files:
-            equals = False
-            for item in cmp.diff_files:
-                logger.error('   FAILED: {} - content does not equal'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
-        if cmp.left_only:
-            equals = False
-            for item in cmp.left_only:
-                logger.error('   FAILED: {} - ref does not exist'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
-        if cmp.right_only:
-            equals = False
-            for item in cmp.right_only:
-                logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
-
-        for item in cmp.common_dirs:
-            if not dircmp(resolve_path(out, item), resolve_path(ref, item)):
+        if ref.exists():
+            if filecmp.cmp(output, ref):
+                logger.info('   PASSED: {}'.format(os.path.relpath(output, program_path.parent)), foreground_color='light green')
+            else:
                 equals = False
+                logger.error('   FAILED: {} - content does not equal'.format(os.path.relpath(output, program_path.parent)))
+        else:
+            equals = False
+            logger.error('   FAILED: {} - ref does not exist: {}'.format(os.path.relpath(output, program_path.parent), os.path.relpath(ref, program_path.parent)))
 
         return equals
 
-    out_file = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
-    ref_file = resolve_path(program_path.parent, '_ref' + out_cdr['path'], input_file.stem)
-    if dircmp(out_file, ref_file):
-        results['PASSED'][input_file] = result
-        logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
+    {%- if flags.out.cdr__exists %}
+
+    def dcmp(output, ref):
+        equals = True
+        if output.exists():
+            for item in output.iterdir():
+                if item.is_file():
+                    if not fcmp(resolve_path(output, item.name), resolve_path(ref, item.name)) or args.debug_cdr:
+                        if not str(item).endswith('_IMSI.dat') and not str(item).endswith('_MSISDN.dat'):
+                            debug_out_cdr(resolve_path(output, item.name), resolve_path(output, item.name).with_suffix('.txt'))
+                            fcmp(resolve_path(output, item.name).with_suffix('.txt'), resolve_path(ref, item.name).with_suffix('.txt'))
+                if item.is_dir():
+                    dcmp(resolve_path(output, item.name), resolve_path(ref, item.name))
+
+        if ref.exists():
+            for item in ref.iterdir():
+                if item.is_file():
+                    if not resolve_path(output, item.name).exists() and item.suffix[1:] == 'dat':
+                        equals = False
+                        logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(resolve_path(output, item.name), program_path.parent)))
+                if item.is_dir():
+                    if not resolve_path(output, item.name).exists():
+                        dcmp(resolve_path(output, item.name), resolve_path(ref, item.name))
+
+        return equals
+
+    # out_cdr
+    output = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
+    ref = resolve_path(program_path.parent, '_ref' + out_cdr['path'], input_file.stem)
+    if not dcmp(output, ref):
+        passed = False
+    {%- else %}
+
+    {%- if flags.out.uri__exists and flags.out.uri__validate %}
+    {%- if out_uris | length > 1%}
+
+    # out_uri
+    for out_uri in out_uris:
+        {%- if flags.out.uri__different__validate %}
+        if not out_uri['validate']:
+            continue
+        {%- endif %}
+        output = resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+        ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+        if output.exists():
+            if not fcmp(output, ref):
+                passed = False
+                {%- if flags.out.uri__debug %}
+                {%- if not flags.out.uri__different__debug %}
+                debug_out_uri(output, output.with_suffix('.yaml'))
+                fcmp(output.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+                {%- else %}
+                if out_uri['debug']:
+                    debug_out_uri(output, output.with_suffix('.yaml'))
+                    fcmp(output.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+                {%- endif %}
+                {%- endif %}
+        else:
+            {%- if not flags.app_test__processing.missing_test_files %}
+            passed = False
+            logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+            {%- else %}
+            if os.path.relpath(output, program_path.parent).replace('\\', '/') not in missing_test_files:
+                passed = False
+                logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+            {%- endif %}
+    {%- else %}
+
+    # out_uri
+    output = resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+    ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+    if output.exists():
+        if not fcmp(output, ref):
+            passed = False
+            {%- if flags.out.uri__debug %}
+            debug_out_uri(output, output.with_suffix('.yaml'))
+            fcmp(output.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+            {%- endif %}
     else:
-        results['FAILED'][input_file] = result
+        {%- if not flags.app_test__processing.missing_test_files %}
+        passed = False
+        logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- else %}
+        if os.path.relpath(output, program_path.parent).replace('\\', '/') not in missing_test_files:
+            passed = False
+            logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- endif %}
     {%- endif %}
+    {%- endif %}
+
+    {%- if flags.out.har__exists %}
+
+    # out_har
+    output = resolve_path(program_path.parent, out_har['path'], input_file.stem + '.' + out_har['suffix'])
+    ref = resolve_path(program_path.parent, '_ref' + out_har['path'], input_file.stem + '.' + out_har['suffix'])
+    if output.exists():
+        if not fcmp(output, ref):
+            passed = False
+            # todo debug
+    else:
+        {%- if not flags.app_test__processing.missing_test_files %}
+        passed = False
+        logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- else %}
+        if os.path.relpath(output, program_path.parent).replace('\\', '/') not in missing_test_files:
+            passed = False
+            logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- endif %}
+    {%- endif %}
+
+    {%- if flags.out.geo_csv__exists %}
+
+    # out_geo_csv
+    output = resolve_path(program_path.parent, out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
+    ref = resolve_path(program_path.parent, '_ref' + out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
+    if output.exists():
+        if not fcmp(output, ref):
+            passed = False
+            # todo debug
+    else:
+        {%- if not flags.app_test__processing.missing_test_files %}
+        passed = False
+        logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- else %}
+        if os.path.relpath(output, program_path.parent).replace('\\', '/') not in missing_test_files:
+            passed = False
+            logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+        {%- endif %}
+    {%- endif %}
+
+    {%- if flags.out.s1ap_dump__exists %}
+
+    # out_s1ap_dump
+    output = resolve_path(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
+    ref = resolve_path(program_path.parent, '_ref' + out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
+    if output.exists():
+        if not fcmp(output, ref):
+            passed = False
+    else:
+        passed = False
+        logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(output, program_path.parent)))
+    {%- endif %}
+    {%- endif %}
+
+    if input_file not in results['FAILED']:
+        if passed:
+            results['PASSED'][input_file] = result
+            logger.info('   PASSED', foreground_color='light green')
+        else:
+            results['FAILED'][input_file] = result
+            logger.error('   FAILED')
 # j2-temp #

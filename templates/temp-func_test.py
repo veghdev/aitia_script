@@ -10,7 +10,7 @@ import sys
 import pathlib
 import platform
 
-program_path = pathlib.Path(__file__)
+program_path = pathlib.Path(__file__).absolute()
 program_lib_path = pathlib.Path.joinpath(program_path.parent, '../lib').resolve()
 program_version = '0.0.1'
 program_platform = platform.system()
@@ -20,7 +20,6 @@ from cterm import CtermInterface
 from app.cross_platform_qt_app import Control
 from tools.logging_tools.logger import Logger
 
-# variables
 
 def parse_args():
     parser = argparse.ArgumentParser(description='generate func_test from template',
@@ -28,7 +27,7 @@ def parse_args():
 
     parser.add_argument('-c', '--config',
                         help='select config by name',
-                        required=False)
+                        required=True)
 
     parser.add_argument('-t', '--test_dir',
                         help='test directory relative path',
@@ -50,16 +49,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-# yaml_config_file = 'inet.inetreassembler.base.yaml'
-# yaml_config_file = 'lte.s1apharwriter.base.yaml'
-# yaml_config_file = 'lte.nasdecipher.base.yaml'
-# yaml_config_file = 'inet.inetreassembler.s1ap.yaml'
-# yaml_config_file = 'lte.s1apassembler.base.yaml'
-# yaml_config_file = 'lte.s1apgeo.base.yaml'
-# yaml_config_file = 'inet.diampreprocessor.yaml'
-# yaml_config_file = 'inet.inetreassembler.diam.yaml'
-yaml_config_file = 'db.cdrwriter.sipcall.yaml'
 
 
 # subroutines
@@ -407,7 +396,8 @@ logger = Logger(name=program_path.stem, level=args.report_level)
 
 # load yaml_config_file
 
-test_dir = pathlib.Path(program_path.parent, args.test_dir)
+test_dir = resolve_path(program_path.parent, args.test_dir)
+yaml_config_file = args.config
 
 class NullUndefined(jinja2.Undefined):
     def __getattr__(self, key):
@@ -423,6 +413,8 @@ yaml_config = yaml.safe_load(yaml_template.render(yaml.safe_load(yaml_template.r
 if yaml_config['env']['name'] != "":
     yaml_config['env']['lib'] = '../' + yaml_config['env']['lib']
     yaml_config['app']['dir'] = '../' + yaml_config['app']['dir']
+    if 'viewer_dir' in yaml_config['app']:
+        yaml_config['app']['viewer_dir'] = '../' + yaml_config['app']['viewer_dir']
 
 if len(yaml_config['app']['platforms']) > 1:
     check_multiplatform_elements()
@@ -472,9 +464,45 @@ test_file_content = test_file_content.replace('# j2-temp #', '')
 
 # write template
 
-test_file = pathlib.Path(env_dir, yaml_config['app_test']['name'] + '.py')
+test_file = resolve_path(env_dir, 'func_test.py')
 if not test_file.exists() or args.recreate_test_file:
     test_file_handler = open(test_file, 'w')
     test_file_handler.write(test_file_content + '\n')
     test_file_handler.close
 logger.info('check test_file: {}'.format(test_file))
+
+# write summary template
+
+func_tests = list()
+for config in resolve_path(yaml_config_file).parent.iterdir():
+    func_tests.append('processes.append' + "('" + config.stem.split('.')[-1] + '/func_test.py' + "')")
+func_tests = '\n'.join(func_tests)
+
+if yaml_config['env']['name'] != "":
+    path = resolve_path(test_dir, yaml_config['env']['dir']).parent
+    summary_file = resolve_path(path, 'func_test.py')
+
+    summary_file_content = """import subprocess
+\n\ndef processing():
+    global exit_code
+    for process in processes:
+        ans = subprocess.call(['python',r'{}'.format(process)])
+        if ans != 0:
+            if exit_code != 0:
+                if ans < exit_code:
+                    exit_code = ans
+            else:
+                exit_code = ans
+    exit(exit_code)
+\n\nexit_code = 0    
+processes = list()
+{}
+processing()""".format('{}', func_tests)
+
+    try:
+        file = open(summary_file, 'w')
+        file.write(summary_file_content + '\n')
+    except Exception as e:
+        raise Exception(e)
+    finally:
+        file.close()

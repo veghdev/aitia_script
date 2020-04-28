@@ -68,20 +68,23 @@
 {% if out_hars is defined and out_hars != 'None' and out_hars | length > 0 %}
     {% do out.update({'har__exists': True}) %}
 {% endif %}
-{% if out_s1ap_dumps is defined and out_s1ap_dumps != 'None' and out_s1ap_dumps | length > 0 %}
-    {% do out.update({'s1ap_dump__exists': True}) %}
-{% endif %}
 {% if out_geo_csvs is defined and out_geo_csvs != 'None' and out_geo_csvs | length > 0 %}
     {% do out.update({'geo_csv__exists': True}) %}
 {% endif %}
-{% if out.uri__exists or out.har__exists or out.s1ap_dump__exists or out.geo_csv__exists or out.cdr__exists %}
+{% if out_s1ap_dumps is defined and out_s1ap_dumps != 'None' and out_s1ap_dumps | length > 0 %}
+    {% do out.update({'s1ap_dump__exists': True}) %}
+{% endif %}
+{% if out.uri__exists or out.cdr__exists or out.har__exists or out.geo_csv__exists or out.s1ap_dump__exists %}
 {% do out.update({'exists': True}) %}
 {% endif %}
 
 
 {% set app_test__processing = {} %}
-{% if config.app_test.processing.test_files_to_skip is defined and config.app_test.processing.test_files_to_skip != 'None' %}
+{% if config.app_test.processing.test_files_to_skip is defined and config.app_test.processing.test_files_to_skip != 'None' and config.app_test.processing.test_files_to_skip | length > 0 %}
     {% do app_test__processing.update({'test_files_to_skip': True}) %}
+{% endif %}
+{% if config.app_test.processing.missing_test_files is defined and config.app_test.processing.missing_test_files != 'None' and config.app_test.processing.missing_test_files | length > 0 %}
+    {% do app_test__processing.update({'missing_test_files': True}) %}
 {% endif %}
 {% if config.app_test.processing.preprocessing.code is defined and config.app_test.processing.preprocessing.code != 'None' %}
     {% do app_test__processing.update({'preprocessing': True}) %}
@@ -163,6 +166,14 @@
 {% if out.uri__exists %}
 {% do subroutines.update({'configure_output': True}) %}
 {% do subroutines.update({'deconfigure_output': True}) %}
+{% endif %}
+
+{% if out.uri__debug %}
+{% do subroutines.update({'debug_out_uri': True}) %}
+{% endif %}
+
+{% if out.cdr__exists %}
+{% do subroutines.update({'debug_out_cdr': True}) %}
 {% endif %}
 
 {% if out.exists %}

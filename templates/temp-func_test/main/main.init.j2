@@ -4,7 +4,11 @@ if args.clean:
 
 if not report_path.exists():
     report_path.mkdir(parents=True, exist_ok=True)
+{%- if config.env.name == "" %}
 logger = Logger(name=program_path.stem, level=report_level, file=report_path)
+{%- else %}
+logger = Logger(name=program_path.stem + ' - {{ config.env.name }}', level=report_level, file=report_path)
+{%- endif %}
 
 if args.remove:
     remove()

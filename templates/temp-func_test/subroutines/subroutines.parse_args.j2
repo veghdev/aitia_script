@@ -1,10 +1,10 @@
 # j2-temp #
 def parse_args():
     {%- if config.env.name == "" %}
-    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} {{ config.app_test.name }}',
+    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} func_test',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     {%- else %}
-    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} {{ config.env.name }} {{ config.app_test.name }}',
+    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} {{ config.env.name }} func_test',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     {%- endif %}
 
@@ -16,6 +16,14 @@ def parse_args():
                         help='select inputs by name using regular expression',
                         nargs='+',
                         default='All')
+
+    {%- if flags.out.cdr__exists %}
+
+    parser.add_argument('--debug_cdr',
+                        help='always create debug files of cdrs',
+                        action="store_true",
+                        default=False)
+    {%- endif %}
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--clean',

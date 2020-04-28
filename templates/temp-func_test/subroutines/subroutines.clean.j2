@@ -27,9 +27,9 @@ def clean():
 
     {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_path('out_uri', out_uris | length) | indent(4, True) }}{%- endif %}
 	
-	{%- if flags.out.geo_csv__exists %}{{"\n"}}{{ collect_path('out_geo_csv', out_geo_csvs | length) | indent(4, True) }}{%- endif %}
+	{%- if flags.out.har__exists %}{{"\n"}}{{ collect_path('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
 
-    {%- if flags.out.har__exists %}{{"\n"}}{{ collect_path('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
+	{%- if flags.out.geo_csv__exists %}{{"\n"}}{{ collect_path('out_geo_csv', out_geo_csvs | length) | indent(4, True) }}{%- endif %}
 	
 	{%- if flags.out.s1ap_dump__exists %}{{"\n"}}{{ collect_path('out_s1ap_dump', out_s1ap_dumps | length) | indent(4, True) }}{%- endif %}
 

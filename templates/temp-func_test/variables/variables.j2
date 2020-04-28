@@ -5,11 +5,15 @@
 
 {%- if flags.app__platforms.utilities_exists %}{{"\n\n"}}{% include 'variables/variables.utilities.j2' %}{%- endif %}
 
+{%- if flags.out.cdr__exists %}{{"\n\n"}}{% include 'variables/variables.viewer.j2' %}{%- endif %}
+
 {%- if flags.in.exists %}{{"\n\n"}}{% include 'variables/variables.in.j2' %}{%- endif %}
 
 {%- if flags.out.exists %}{{"\n\n"}}{% include 'variables/variables.out.j2' %}{%- endif %}
 
 {%- if flags.app_test__processing.test_files_to_skip %}{{"\n\n"}}{% include 'variables/variables.test_files_to_skip.j2' %}{%- endif %}
+
+{%- if flags.app_test__processing.missing_test_files %}{{"\n\n"}}{% include 'variables/variables.missing_test_files.j2' %}{%- endif %}
 
 {%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n\n"}}{% include 'variables/variables.ini_config__specific_file.j2' %}{%- endif %}
 

@@ -1,14 +1,14 @@
 # j2-temp #
-{%- if config.app_test.processing.test_files_to_skip | length > 8 -%}
-test_files_to_skip = [{{"\n"}}
-{%- for item in config.app_test.processing.test_files_to_skip -%}
+{%- if config.app_test.processing.missing_test_files | length > 8 -%}
+missing_test_files = [{{"\n"}}
+{%- for item in config.app_test.processing.missing_test_files -%}
     {{- "\t" if loop.first }}'{{ item }}'{{- ", " if not loop.last }}
     {%- if loop.index % 4 == 0 %}{{ "\n\t" }}{%- endif %}
 {%- endfor -%}
 {{"\n"}}]
 {%- else %}
-test_files_to_skip = [
-{%- for item in config.app_test.processing.test_files_to_skip %}
+missing_test_files = [
+{%- for item in config.app_test.processing.missing_test_files %}
     '{{ item }}'
     {{- "," if not loop.last }}
 {%- endfor %}
