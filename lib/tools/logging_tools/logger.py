@@ -1,6 +1,7 @@
 import inspect
 import logging
 import sys
+import datetime
 from platform import system
 
 if "win" in system().lower():
@@ -178,12 +179,112 @@ class Formatter(logging.Formatter):
         return background_colors[color]
 
 
+class FileFormatter(logging.Formatter):
+    _params = {
+        VERBOSE:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            },
+        DEBUG:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            },
+        INFO:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            },
+        WARNING:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            },
+        ERROR:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            },
+        CRITICAL:
+            {
+                'log_timestamp': True,
+                'log_levelname': True,
+                'log_name': True
+            }
+    }
+
+    _fmts = {
+        VERBOSE: '',
+        DEBUG: '',
+        INFO: '',
+        WARNING: '',
+        ERROR: '',
+        CRITICAL: ''
+    }
+
+    def __init__(self):
+        self._fmts['VERBOSE'] = self._get_formatter('VERBOSE')
+        super().__init__(fmt='%(msg)s', datefmt='%Y.%m.%d %H:%M:%S', style='%')
+
+    def format(self, record):
+
+        _original_fmt = self._style._fmt
+
+        if record.levelno == logging.VERBOSE:
+            self._style._fmt = self._fmts[VERBOSE]
+        elif record.levelno == logging.DEBUG:
+            self._style._fmt = self._fmts[DEBUG]
+        elif record.levelno == logging.INFO:
+            self._style._fmt = self._fmts[INFO]
+        elif record.levelno == logging.WARNING:
+            self._style._fmt = self._fmts[WARNING]
+        elif record.levelno == logging.ERROR:
+            self._style._fmt = self._fmts[ERROR]
+        elif record.levelno == logging.CRITICAL:
+            self._style._fmt = self._fmts[CRITICAL]
+        else:
+            self._style._fmt = _original_fmt
+
+        return logging.Formatter.format(self, record)
+
+    def _get_formatter(self, level, **new_params):
+        tmp = dict()
+        tmp.update(self._params[level])
+        for param in tmp:
+            if param in new_params:
+                tmp[param] = new_params[param]
+
+        formatter = ''
+
+        if tmp['log_timestamp']:
+            formatter += '%(asctime)s.%(msecs)03d'
+        if tmp['log_levelname']:
+            formatter += ' - %(levelname)-8s'
+        if tmp['log_name']:
+            formatter += ' - %(name)s'
+
+        if formatter == '':
+            formatter += '%(msg)s'
+        else:
+            formatter += ' - %(msg)s'
+
+        return formatter
+
+
 class Logger:
 
-    def __init__(self, name, level='INFO'):
+    def __init__(self, name, level='INFO', file=None):
+        self._name = name
+        self._file = file
         self._set_root_logger()
         self.level = level
-        self._logger = logging.getLogger(name)
+        self._logger = logging.getLogger(self._name)
 
     @property
     def level(self):
@@ -204,11 +305,20 @@ class Logger:
         self._sh = logging.StreamHandler(sys.stdout)
         self._sh.setFormatter(self._fmt)
         self._root.addHandler(self._sh)
+        if self._file is not None:
+            self._fh = logging.FileHandler('{}/{}_{:%Y%m%d}.log'.format(self._file, self._name, datetime.datetime.now()))
+            self._ffmt = FileFormatter()
+            self._fh.setFormatter(self._ffmt)
+            self._root.addHandler(self._fh)
 
     def _log(self, level, msg, **new_params):
         try:
             base_fmt = self._fmt._fmts[level]
             self._fmt._fmts[level] = self._fmt._get_formatter(level, **new_params)
+            if self._file is not None:
+                base_ffmt = self._ffmt._fmts[level]
+                self._ffmt._fmts[level] = self._ffmt._get_formatter(level, **new_params)
+
             if level == VERBOSE:
                 self._logger.verbose(msg)
             elif level == DEBUG:
@@ -223,7 +333,11 @@ class Logger:
                 self._logger.critical(msg)
             else:
                 pass
+
             self._fmt._fmts[level] = base_fmt
+            if self._file is not None:
+                self._ffmt._fmts[level] = base_fmt
+
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, inspect.currentframe().f_code.co_name, e.__class__.__name__, e))
