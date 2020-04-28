@@ -1,0 +1,22 @@
+# j2-temp #
+def remove():
+    for input_file in find_input_files():
+        out_files = [
+        {%- for item in uri_config.output %}
+            resolve_path(program_path.parent, '{{ item.uri_path }}', input_file.stem + '.{{ item.uri_format }}')
+        {{- "," if not loop.last }}
+        {%- endfor %}
+        ]
+        ref_files = [
+        {%- for item in uri_config.output %}
+            resolve_path(program_path.parent, '_ref{{ item.uri_path }}', input_file.stem + '.{{ item.uri_format }}')
+        {{- "," if not loop.last }}
+        {%- endfor %}
+        ]
+
+        for file in files:
+            if file.exists():
+                file.unlink()
+
+    exit(0)
+# j2-temp #

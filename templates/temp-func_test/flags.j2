@@ -1,91 +1,181 @@
-
-
+{% set app__platforms = {} %}
 {% if config.app.platforms | length > 1 %}
-    {% set multiplatform = true %}
-{% else %}
-    {% set multiplatform = false %}
+    {% do app__platforms.update({'cross_platform': True}) %}
+{% endif %}
+{% for item in config.app.platforms %}
+    {% if item.utilities.cterm is defined and item.utilities.cterm != 'None' %}
+         {% do app__platforms.update({'utilities__cterm': True}) %}
+         {% do app__platforms.update({'utilities_exists': True}) %}
+    {% endif %}
+    {% if item.utilities.adg is defined and item.utilities.adg != 'None' %}
+        {% do app__platforms.update({'utilities__adg': True}) %}
+        {% do app__platforms.update({'utilities_exists': True}) %}
+    {% endif %}
+{% endfor %}
+
+
+{% set in = {} %}
+{% if in_uris is defined and in_uris != 'None' and in_uris | length > 0 %}
+    {% do in.update({'uri__exists': True}) %}
+    {% if in_uris[0].searching %}
+        {% do in.update({'uri__main__searching': True}) %}
+    {% endif %}
+    {% if in_uris | length > 1 %}
+        {% for item in in_uris %}
+            {% if loop.index > 1 %}
+                {% if item.searching != in_uris[1].searching %}
+                    {% do in.update({'uri__different__searching': True}) %}
+                {% endif %}
+                {% if item.searching %}
+                    {% do in.update({'uri__additional__searching': True}) %}
+                {% endif %}
+                {% if item.optional != in_uris[1].optional %}
+                    {% do in.update({'uri__different__optional': True}) %}
+                {% endif %}
+                {% if item.optional %}
+                    {% do in.update({'uri__optional': True}) %}
+                {% endif %}
+             {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endif %}
+{% if in.uri__exists %}
+{% do in.update({'exists': True}) %}
 {% endif %}
 
 
-
-
-{% if uri_config.input | length > 0 %}
-    {% set uri_input = true %}
-{% else %}
-    {% set uri_input = false %}
+{% set out = {} %}
+{% if out_uris is defined and out_uris != 'None' and out_uris | length > 0 %}
+    {% do out.update({'uri__exists': True}) %}
+    {% for item in out_uris %}
+        {% if item.validate != out_uris[0].validate %}
+            {% do out.update({'uri__different__validate': True}) %}
+        {% endif %}
+        {% if item.validate %}
+            {% do out.update({'uri__validate': True}) %}
+        {% endif %}
+        {% if item.debug != out_uris[0].debug %}
+            {% do out.update({'uri__different__debug': True}) %}
+        {% endif %}
+        {% if item.debug %}
+            {% do out.update({'uri__debug': True}) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+{% if out_cdrs is defined and out_cdrs != 'None' and out_cdrs | length > 0 %}
+    {% do out.update({'cdr__exists': True}) %}
+{% endif %}
+{% if out_hars is defined and out_hars != 'None' and out_hars | length > 0 %}
+    {% do out.update({'har__exists': True}) %}
+{% endif %}
+{% if out_s1ap_dumps is defined and out_s1ap_dumps != 'None' and out_s1ap_dumps | length > 0 %}
+    {% do out.update({'s1ap_dump__exists': True}) %}
+{% endif %}
+{% if out_geo_csvs is defined and out_geo_csvs != 'None' and out_geo_csvs | length > 0 %}
+    {% do out.update({'geo_csv__exists': True}) %}
+{% endif %}
+{% if out.uri__exists or out.har__exists or out.s1ap_dump__exists or out.geo_csv__exists or out.cdr__exists %}
+{% do out.update({'exists': True}) %}
 {% endif %}
 
-{% if uri_config.output | length > 0 %}
-    {% set uri_output = true %}
-{% else %}
-    {% set uri_output = false %}
-{% endif %}
 
-
-
-
+{% set app_test__processing = {} %}
 {% if config.app_test.processing.test_files_to_skip is defined and config.app_test.processing.test_files_to_skip != 'None' %}
-    {% set test_files_to_skip = true %}
-{% else %}
-    {% set test_files_to_skip = false %}
+    {% do app_test__processing.update({'test_files_to_skip': True}) %}
 {% endif %}
-
-
 {% if config.app_test.processing.preprocessing.code is defined and config.app_test.processing.preprocessing.code != 'None' %}
-    {% set preprocessing = true %}
-{% else %}
-    {% set preprocessing = false %}
+    {% do app_test__processing.update({'preprocessing': True}) %}
 {% endif %}
-
 {% if config.app_test.processing.postprocessing.code is defined and config.app_test.processing.postprocessing.code != 'None' %}
-    {% set postprocessing = true %}
-{% else %}
-    {% set postprocessing = false %}
+    {% do app_test__processing.update({'postprocessing': True}) %}
 {% endif %}
 
 
-
-
+{% set app_test__app_config__ini_config = {} %}
 {% if config.app_test.app_config.ini_config.global is defined and config.app_test.app_config.ini_config.global != 'None' %}
-    {% set global_ini_config = true %}
-{% else %}
-    {% set global_ini_config = false %}
+    {% do app_test__app_config__ini_config.update({'global': True}) %}
 {% endif %}
-
 {% if config.app_test.app_config.ini_config.file is defined and config.app_test.app_config.ini_config.file != 'None' %}
-    {% set file_ini_config = true %}
-{% else %}
-    {% set file_ini_config = false %}
+    {% do app_test__app_config__ini_config.update({'file': True}) %}
 {% endif %}
-
 {% if config.app_test.app_config.ini_config.specific_file is defined and config.app_test.app_config.ini_config.specific_file != 'None' %}
-    {% set specific_file_ini_config = true %}
-{% else %}
-    {% set specific_file_ini_config = false %}
+    {% do app_test__app_config__ini_config.update({'specific_file': True}) %}
 {% endif %}
 
 
+{% set app_test__app_config__runtime_config = {} %}
 {% if config.app_test.app_config.runtime_config.global is defined and config.app_test.app_config.runtime_config.global != 'None' %}
-    {% set global_runtime_config = true %}
-{% else %}
-    {% set global_runtime_config = false %}
+    {% do app_test__app_config__runtime_config.update({'global': True}) %}
 {% endif %}
-
 {% if config.app_test.app_config.runtime_config.file is defined and config.app_test.app_config.runtime_config.file != 'None' %}
-    {% set file_runtime_config = true %}
-{% else %}
-    {% set file_runtime_config = false %}
+    {% do app_test__app_config__runtime_config.update({'file': True}) %}
 {% endif %}
-
 {% if config.app_test.app_config.runtime_config.specific_file is defined and config.app_test.app_config.runtime_config.specific_file != 'None' %}
-    {% set specific_file_runtime_config = true %}
-{% else %}
-    {% set specific_file_runtime_config = false %}
+    {% do app_test__app_config__runtime_config.update({'specific_file': True}) %}
 {% endif %}
 
 
-{% if config.app_test.app_config.initialize_commands is defined and config.app_test.app_config.initialize_commands != 'None' %}
-    {% set initialize_commands = true %}
-{% else %}
-    {% set initialize_commands = false %}
+{% set app_test__app_config__pre_commands = {} %}
+{% do app_test__app_config__pre_commands.update({'exists': False}) %}
+{% if config.app_test.app_config.pre_commands.global is defined and config.app_test.app_config.pre_commands.global != 'None' %}
+    {% do app_test__app_config__pre_commands.update({'global': True}) %}
+    {% do app_test__app_config__pre_commands.update({'exists': True}) %}
+{% endif %}
+{% if config.app_test.app_config.pre_commands.file is defined and config.app_test.app_config.pre_commands.file != 'None' %}
+    {% do app_test__app_config__pre_commands.update({'file': True}) %}
+    {% do app_test__app_config__pre_commands.update({'exists': True}) %}
+{% endif %}
+
+
+{% set app_test__app_config__post_commands = {} %}
+{% do app_test__app_config__post_commands.update({'exists': False}) %}
+{% if config.app_test.app_config.post_commands.global is defined and config.app_test.app_config.post_commands.global != 'None' %}
+    {% do app_test__app_config__post_commands.update({'global': True}) %}
+    {% do app_test__app_config__post_commands.update({'exists': True}) %}
+{% endif %}
+{% if config.app_test.app_config.post_commands.file is defined and config.app_test.app_config.post_commands.file != 'None' %}
+    {% do app_test__app_config__post_commands.update({'file': True}) %}
+    {% do app_test__app_config__post_commands.update({'exists': True}) %}
+{% endif %}
+
+
+
+
+{% set subroutines = {} %}
+
+{% if in.uri__main__searching or in.uri__additional__searching %}
+{% do subroutines.update({'resolve_path_links': True}) %}
+{% endif %}
+
+{%- if in_uris | length > 1 %}
+{% do subroutines.update({'find_additional_input_file': True}) %}
+{% endif %}
+
+{% if in.exists %}
+{% do subroutines.update({'find_input_files': True}) %}
+{% endif %}
+
+{% if in.uri__exists %}
+{% do subroutines.update({'configure_input': True}) %}
+{% do subroutines.update({'deconfigure_input': True}) %}
+{% endif %}
+
+{% if out.uri__exists %}
+{% do subroutines.update({'configure_output': True}) %}
+{% do subroutines.update({'deconfigure_output': True}) %}
+{% endif %}
+
+{% if out.exists %}
+{% do subroutines.update({'clean_output': True}) %}
+{% do subroutines.update({'check_output': True}) %}
+{% endif %}
+
+{% if app_test__app_config__runtime_config.file or app_test__app_config__runtime_config.specific_file or out.cdr__exists or out.s1ap_dump__exists or out.har__exists %}
+{% do subroutines.update({'set_up_runtime_config': True}) %}
+{% do subroutines.update({'restore_runtime_config': True}) %}
+{% endif %}
+
+{% if app_test__app_config__ini_config.file or app_test__app_config__ini_config.specific_file or out.geo_csv__exists %}
+{% do subroutines.update({'set_up_ini_config': True}) %}
+{% do subroutines.update({'restore_ini_config': True}) %}
 {% endif %}

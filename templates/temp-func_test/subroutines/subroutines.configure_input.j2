@@ -1,6 +1,33 @@
 # j2-temp #
 def configure_input():
-    {%- for item in uri_config.input %}
-    app.open_connection(direction='in', uri={{ item.sub_uri }})
-    {%- endfor %}
+{%- if in_uris | length == 1 %}
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format(input_file.suffix[1:], input_file, in_uri['params']))
+{%- elif in_uris | length == 2 %}
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format(input_file.suffix[1:], input_file, in_uris[0]['params']))
+
+    additional_input_file = find_additional_input_file(in_uris[1])
+    if additional_input_file is not None:
+        app.open_connection(direction='in', uri='file-{}://{}?{}'.format(additional_input_file.suffix[1:], additional_input_file, in_uris[1]['params']))
+    {%- if not flags.in.uri__optional %}
+    else:
+        results['FAILED'][input_file] = result
+		logger.error('   FAILED: {} - additional input does not exist'.format(in_uris[1]['path']))
+    {%- endif %}
+{%- elif in_uris | length > 2 %}
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format(input_file.suffix[1:], input_file, in_uris[0]['params']))
+
+    for in_uri in in_uris[1:]:
+        additional_input_file = find_additional_input_file(in_uri)
+        if additional_input_file is not None:
+            app.open_connection(direction='in', uri='file-{}://{}?{}'.format(additional_input_file.suffix[1:], additional_input_file, in_uri['params']))
+        {%- if not flags.in.uri__optional %}
+        else:
+            results['FAILED'][input_file] = result
+			logger.error('   FAILED: {} - additional input does not exist'.format(in_uri['path']))
+        {%- elif flags.in.uri__optional and flags.in.uri__different__optional %}
+            if not in_uri['optional']:
+				results['FAILED'][input_file] = result
+				logger.error('   FAILED: {} - additional input does not exist'.format(in_uri['path']))
+        {%- endif %}
+{%- endif %}
 # j2-temp #

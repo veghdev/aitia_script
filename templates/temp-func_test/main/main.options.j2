@@ -1,30 +1,19 @@
 # j2-temp #
-logger = Logger(name=program_path.stem, level=report_level)
 logger.info('options:')
-logger.info('   program = {}'.format(program_path))
-logger.info('   program_version = {}'.format(program_version))
-logger.info('   program_lib_path = {}'.format(program_lib_path))
-logger.info('   bin_path = {}'.format(bin_path))
-logger.info('   app_name = {}'.format(app_name))
-logger.info('   app_port = {}'.format(app_port))
-logger.info('   app_path = {}'.format(app_path))
-logger.info('   app_ini_path = {}'.format(app_ini_path))
-logger.info('   base_ini_path = {}'.format(base_ini_path))
-logger.info('   report_path = {}'.format(report_path))
-logger.info('   report_level = {}'.format(report_level))
-{%- if config.app.platforms[0].ext.cterm is defined and config.app.platforms[0].ext.cterm != 'None' %}
-logger.info('   cterm_path = {}'.format(cterm_path))
-{%- endif%}
-{%- if config.app.platforms[0].ext.adg is defined and config.app.platforms[0].ext.adg != 'None' %}
-logger.info('   adg_path = {}'.format(adg_path))
-{%- endif%}
-{%- if flags.test_files_to_skip %}
-logger.info('   test_files_to_skip =\n - {}'.format('\n - '.join(test_files_to_skip)), foreground_color='light cyan')
-{%- endif%}
-{%- if flags.specific_file_ini_config %}
-logger.info('   specific_file_ini_config =\n - {}'.format('\n - '.join('{} : {}'.format(key, value) for key, value in specific_file_ini_config.items())), foreground_color='light cyan')
-{%- endif%}
-{%- if flags.specific_file_runtime_config %}
-logger.info('   specific_file_runtime_config =\n - {}'.format('\n - '.join('{} : {}'.format(key, value) for key, value in specific_file_runtime_config.items())), foreground_color='light cyan')
-{%- endif%}
+logger.info('   {:16s} = {}'.format('program', program_path))
+logger.info('   {:16s} = {}'.format('program_version', program_version))
+logger.info('   {:16s} = {}'.format('program_lib_path', program_lib_path))
+logger.info('   {:16s} = {}'.format('bin_path', bin_path))
+logger.info('   {:16s} = {}'.format('app_name', app_name))
+logger.info('   {:16s} = {}'.format('app_port', app_port))
+logger.info('   {:16s} = {}'.format('app_path', app_path))
+logger.info('   {:16s} = {}'.format('app_ini_path', app_ini_path))
+logger.info('   {:16s} = {}'.format('base_ini_path', base_ini_path))
+logger.info('   {:16s} = {}'.format('report_path', report_path))
+logger.info('   {:16s} = {}'.format('report_level', report_level))
+{%- if flags.app__platforms.utilities__cterm %}{{"\n"}}logger.info('   {:16s} = {}'.format('cterm_path', cterm_path)){%- endif%}
+{%- if flags.app__platforms.utilities__adg %}{{"\n"}}logger.info('   {:16s} = {}'.format('adg_path', adg_path)){%- endif%}
+{%- if flags.app_test__processing.test_files_to_skip %}{{"\n"}}logger.info('   {} =\n - {}'.format('test_files_to_skip', '\n - '.join(test_files_to_skip)), foreground_color='light cyan'){%- endif%}
+{%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('ini_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in ini_config__specific_file.items())), foreground_color='light cyan'){%- endif%}
+{%- if flags.app_test__app_config__runtime_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('runtime_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in runtime_config__specific_file.items())), foreground_color='light cyan'){%- endif%}
 # j2-temp #

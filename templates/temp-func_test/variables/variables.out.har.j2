@@ -1,0 +1,12 @@
+# j2-temp #
+{%- if out_hars | length > 1 %}
+out_hars = [
+{%- for item in out_hars %}
+    {{ item }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+out_har = {{ out_hars[0] }}
+{%- endif %}
+# j2-temp #

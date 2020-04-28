@@ -1,0 +1,54 @@
+# j2-temp #
+{%- macro collect_file(item, length, debug=False, different__debug=False, debug__format=None) %}
+{%- if length > 1 %}
+# {{ item }}
+for {{ item }} in {{ item }}s:
+    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{}'.format({{ item }}['suffix'])))
+    {%- if debug %}
+    {%- if different__debug %}
+    # {{ item }} debug
+    if {{ item }}['debug']:
+        files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+    {%- else %}
+    # {{ item }} debug
+    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+    {%- endif %}
+    {%- endif %}
+{%- else %}
+# {{ item }}
+files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{}'.format({{ item }}['suffix'])))
+{%- if debug %}
+{%- if different__debug %}
+# {{ item }} debug
+if {{ item }}['debug']:
+    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+{%- else %}
+# {{ item }} debug
+files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endmacro %}
+# j2-temp #
+def clean_output():
+    {%- if flags.out.cdr__exists %}
+    path = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
+    if path.exists():
+        shutil.rmtree(path)
+    {%- else %}
+    files = list()
+
+    {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_file('out_uri', out_uris | length, flags.out.uri__debug, flags.out.uri__different__debug, 'yaml') | indent(4, True) }}{%- endif %}
+	
+	{%- if flags.out.geo_csv__exists %}{{"\n"}}{{ collect_file('out_geo_csv', out_geo_csvs | length) | indent(4, True) }}{%- endif %}
+
+    {%- if flags.out.har__exists %}{{"\n"}}{{ collect_file('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
+	
+	{%- if flags.out.s1ap_dump__exists %}{{"\n"}}{{ collect_file('out_s1ap_dump', out_s1ap_dumps | length) | indent(4, True) }}{%- endif %}
+
+    for file in files:
+        if file.exists():
+            file.unlink()
+            logger.debug('   unlinked: {}'.format(os.path.relpath(file, program_path.parent)))
+    {%- endif %}
+# j2-temp #

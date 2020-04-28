@@ -1,0 +1,27 @@
+# j2-temp #
+def find_additional_input_file(in_uri):
+    additional_input_file = resolve_path(program_path.parent, in_uri['path'], input_file.stem + '.' + in_uri['suffix'])
+    if additional_input_file.exists():
+        if additional_input_file.stat().st_size != 0:
+            return additional_input_file
+    {%- if flags.in.uri__additional__searching and not flags.in.uri__different__searching %}
+    else:
+        path_links = resolve_path_links(additional_input_file.parent)
+        for path_link in path_links:
+            additional_input_file = resolve_path(path_link, input_file.stem + '.' + in_uri['suffix'])
+            if additional_input_file.exists():
+                if additional_input_file.stat().st_size != 0:
+                    return additional_input_file
+    {%- elif flags.in.uri__additional__searching and flags.in.uri__different__searching %}
+    else:
+        if in_uri['searching']:
+            path_links = resolve_path_links(additional_input_file.parent)
+            for path_link in path_links:
+                additional_input_file = resolve_path(path_link, input_file.stem + '.' + in_uri['suffix'])
+                if additional_input_file.exists():
+                    if additional_input_file.stat().st_size != 0:
+                        return additional_input_file
+    {%- endif %}
+
+    return None
+# j2-temp #

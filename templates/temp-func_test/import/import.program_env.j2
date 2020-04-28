@@ -1,12 +1,11 @@
+# j2-temp #
 import sys
 import pathlib
-{%- if flags.multiplatform %}
-import platform
-{%- endif %}
+{%- if flags.app__platforms.cross_platform %}{{"\n"}}import platform{%- endif %}
 program_path = pathlib.Path(__file__)
-program_lib_path = pathlib.Path(program_path.parent, '{{ config.env.lib }}').resolve()
+program_lib_path = pathlib.Path.joinpath(program_path.parent, '{{ config.env.lib }}').resolve()
 program_version = '{{ config.app_test.version }}'
-{%- if flags.multiplatform %}
-program_platform = platform.system()
-{%- endif %}
+{%- if flags.app__platforms.cross_platform %}{{"\n"}}program_platform = platform.system(){%- endif %}
+program_time = time.time()
 sys.path.append(str(program_lib_path))
+# j2-temp #

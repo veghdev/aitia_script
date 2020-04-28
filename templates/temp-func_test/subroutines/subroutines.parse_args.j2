@@ -1,0 +1,40 @@
+# j2-temp #
+def parse_args():
+    {%- if config.env.name == "" %}
+    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} {{ config.app_test.name }}',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    {%- else %}
+    parser = argparse.ArgumentParser(description='{{ config.app.git_name }} {{ config.env.name }} {{ config.app_test.name }}',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    {%- endif %}
+
+    parser.add_argument('-rl', '--report_level',
+                        help='set report level',
+                        choices=['VERBOSE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        default='INFO')
+    parser.add_argument('-s', '--select',
+                        help='select inputs by name using regular expression',
+                        nargs='+',
+                        default='All')
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--clean',
+                       help='delete reports and all outputs and exit',
+                       action="store_true",
+                       default=False)
+    group.add_argument('--remove',
+                       help='delete all or selected inputs, outputs and referencies and exit',
+                       action="store_true",
+                       default=False)
+    group.add_argument('--replace',
+                       help='replace all or selected referencies with previous outputs and exit',
+                       action="store_true",
+                       default=False)
+
+    args = parser.parse_args()
+
+    if args.select == 'All':
+        args.select = None
+
+    return args
+# j2-temp #

@@ -1,17 +1,17 @@
-import re
 import yaml
-import jinja2
+import jinja2.ext
 import shutil
 import os
 import socket
 import contextlib
+import argparse
 
 import sys
 import pathlib
 import platform
 
 program_path = pathlib.Path(__file__)
-program_lib_path = pathlib.Path(program_path.parent, '../lib').resolve()
+program_lib_path = pathlib.Path.joinpath(program_path.parent, '../lib').resolve()
 program_version = '0.0.1'
 program_platform = platform.system()
 sys.path.append(str(program_lib_path))
@@ -20,17 +20,56 @@ from cterm import CtermInterface
 from app.cross_platform_qt_app import Control
 from tools.logging_tools.logger import Logger
 
-
 # variables
 
-yaml_config_file = 'config-func_test.yaml'
-test_dir = pathlib.Path(program_path.parent, '../test')
+def parse_args():
+    parser = argparse.ArgumentParser(description='generate func_test from template',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-recreate_default_ini = False
-recreate_test_file = True
+    parser.add_argument('-c', '--config',
+                        help='select config by name',
+                        required=False)
+
+    parser.add_argument('-t', '--test_dir',
+                        help='test directory relative path',
+                        default='../test')
+
+    parser.add_argument('-rl', '--report_level',
+                        help='set report level',
+                        choices=['VERBOSE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        default='INFO')
+    parser.add_argument('--recreate_default_ini',
+                       help='recreate default ini',
+                       action="store_true",
+                       default=False)
+    parser.add_argument('--recreate_test_file',
+                        help='recreate test file',
+                        action="store_false",
+                        default=True)
+
+    args = parser.parse_args()
+
+    return args
+
+# yaml_config_file = 'inet.inetreassembler.base.yaml'
+# yaml_config_file = 'lte.s1apharwriter.base.yaml'
+# yaml_config_file = 'lte.nasdecipher.base.yaml'
+# yaml_config_file = 'inet.inetreassembler.s1ap.yaml'
+# yaml_config_file = 'lte.s1apassembler.base.yaml'
+# yaml_config_file = 'lte.s1apgeo.base.yaml'
+# yaml_config_file = 'inet.diampreprocessor.yaml'
+# yaml_config_file = 'inet.inetreassembler.diam.yaml'
+yaml_config_file = 'db.cdrwriter.sipcall.yaml'
 
 
 # subroutines
+
+def resolve_path(*args):
+    if len(args) > 1:
+        return pathlib.Path.joinpath(*args).resolve()
+    else:
+        return pathlib.Path(*args).resolve()
+
 
 def find_free_port():
     with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
@@ -45,22 +84,22 @@ def create_env_dir():
 
 
 def create_default_ini():
-    ini_dir = pathlib.Path.joinpath(env_dir, yaml_config['app']['ini']['dir']).resolve()
+    ini_dir = resolve_path(env_dir, yaml_config['app']['ini']['dir'])
     ini_dir.mkdir(parents=True, exist_ok=True)
     logger.info('check ini_dir: {}'.format(ini_dir))
-    default_ini = pathlib.Path.joinpath(ini_dir, yaml_config['app']['name'] + '.ini').resolve()
-    if not default_ini.exists() or recreate_default_ini:
-        app_dir = pathlib.Path.joinpath(env_dir, yaml_config['app']['dir']).resolve()
+    default_ini = resolve_path(ini_dir, yaml_config['app']['name'] + '.ini')
+    if not default_ini.exists() or args.recreate_default_ini:
+        app_dir = resolve_path(env_dir, yaml_config['app']['dir'])
         logger.debug('app_dir: {}'.format(app_dir))
         for i in range(len(yaml_config['app']['platforms'])):
             if program_platform != yaml_config['app']['platforms'][i]['platform']:
                 continue
             necessary_components = [
-                pathlib.Path.joinpath(app_dir, yaml_config['app']['platforms'][i]['executable']).resolve()
+                resolve_path(app_dir, yaml_config['app']['platforms'][i]['executable'])
             ]
             for item in yaml_config['app']['platforms'][i]['necessary_components']:
-                necessary_components.append(pathlib.Path.joinpath(app_dir, item).resolve())
-            tmp_bin_dir = pathlib.Path.joinpath(ini_dir, 'tmp').resolve()
+                necessary_components.append(resolve_path(app_dir, item))
+            tmp_bin_dir = resolve_path(ini_dir, 'tmp')
             tmp_bin_dir.mkdir(parents=True, exist_ok=True)
             logger.debug('tmp_bin_dir: {}'.format(tmp_bin_dir))
             for item in necessary_components:
@@ -68,10 +107,9 @@ def create_default_ini():
                 logger.debug('shutil.copy2({}, {})'.format(item, tmp_bin_dir))
             try:
                 os.chdir(tmp_bin_dir)
-                cterm_interface = CtermInterface(cterm=pathlib.Path.joinpath(app_dir, 'cterm.exe').resolve())
+                cterm_interface = CtermInterface(cterm=resolve_path(app_dir, 'cterm.exe'))
                 app = Control(cterm_interface=cterm_interface, ip='127.0.0.1', port=find_free_port(),
-                              app=pathlib.Path.joinpath(tmp_bin_dir,
-                                                        yaml_config['app']['platforms'][i]['executable']).resolve())
+                              app=resolve_path(tmp_bin_dir, yaml_config['app']['platforms'][i]['executable']))
                 app.start()
                 app.save_config()
                 app.stop()
@@ -82,14 +120,10 @@ def create_default_ini():
             finally:
                 os.chdir(program_path.parent)
             shutil.copy2(
-                pathlib.Path.joinpath(
-                    tmp_bin_dir,
-                    pathlib.Path(yaml_config['app']['platforms'][i]['executable']).stem + '.ini').resolve(),
+                resolve_path(tmp_bin_dir, resolve_path(yaml_config['app']['platforms'][i]['executable']).stem + '.ini'),
                 default_ini)
             logger.debug('shutil.copy2({}, {})'.format(
-                pathlib.Path.joinpath(
-                    tmp_bin_dir,
-                    pathlib.Path(yaml_config['app']['platforms'][i]['executable']).stem + '.ini').resolve(),
+                resolve_path(tmp_bin_dir, resolve_path(yaml_config['app']['platforms'][i]['executable']).stem + '.ini'),
                 default_ini))
             shutil.rmtree(tmp_bin_dir)
             logger.debug('shutil.rmtree({})'.format(tmp_bin_dir))
@@ -97,225 +131,283 @@ def create_default_ini():
     logger.info('check default_ini: {}'.format(default_ini))
 
 
-def check_multiplatform():
-    if len(yaml_config['app']['platforms']) > 1:
-        # check items
-        executable_exists = None
-        ext_cterm_exists = None
-        ext_adg_exists = None
-        for i in range(len(yaml_config['app']['platforms'])):
-            if i == 0:
-                executable_exists = False
-                if 'executable' in yaml_config['app']['platforms'][i]:
-                    executable_exists = True
-                ext_cterm_exists = False
-                if 'cterm' in yaml_config['app']['platforms'][i]['ext']:
-                    ext_cterm_exists = True
-                ext_adg_exists = False
-                if 'adg' in yaml_config['app']['platforms'][i]['ext']:
-                    ext_adg_exists = True
+def check_multiplatform_elements():
+    executable_exists = None
+    cterm_exists = None
+    adg_exists = None
+    for i in range(len(yaml_config['app']['platforms'])):
+        if i == 0:
+            executable_exists = False
+            if 'executable' in yaml_config['app']['platforms'][i]:
+                executable_exists = True
+            cterm_exists = False
+            if 'cterm' in yaml_config['app']['platforms'][i]['utilities']:
+                cterm_exists = True
+            adg_exists = False
+            if 'adg' in yaml_config['app']['platforms'][i]['utilities']:
+                adg_exists = True
+        else:
+            assert executable_exists == ('executable' in yaml_config['app']['platforms'][i]), \
+                'multiplatform items do not match'
+            assert cterm_exists == ('cterm' in yaml_config['app']['platforms'][i]['utilities']), \
+                'multiplatform items do not match'
+            assert adg_exists == ('adg' in yaml_config['app']['platforms'][i]['utilities']), \
+                'multiplatform items do not match'
+
+
+def preprocessing__app_test__processing__in_uri():
+    tmp_in_uris = yaml_config['app_test']['processing']['in_uri']
+
+    if tmp_in_uris != 'None':
+        for in_uri in tmp_in_uris[:]:
+            if in_uri.startswith('file-'):
+                tmp = in_uri.split('-')[1]
+
+                tmp = tmp.split('://')
+                suffix = [tmp[0]]
+                if len(in_uris) == 0:
+                    suffix = tmp[0].split('|')
+                tmp = tmp[1]
+
+                tmp = tmp.split('/testFile?')
+                path = tmp[0]
+                tmp = tmp[1]
+
+                params = tmp.split('&')
+                searching = False
+                searching_paths = None
+                optional = False
+                for param in params[:]:
+                    if param.startswith('name='):
+                        param_index = params.index(param)
+                        param = param.replace('uriDir', 'input')
+                        param = param.replace('uriIndex', str(len(in_uris)))
+                        params[param_index] = param
+                    elif param.startswith('searching='):
+                        tmp_param = param.split('=')
+                        if tmp_param[1] != 'False':
+                            searching = True
+                            searching_paths = tmp_param[1].split('|')
+                            params.remove(param)
+                    elif param.startswith('optional='):
+                        tmp_param = param.split('=')
+                        if tmp_param[1] == 'True':
+                            optional = True
+                        params.remove(param)
+
+                in_uri = {
+                    'path': path,
+                    'suffix': suffix,
+                    'params': '&'.join(params),
+                    'searching': searching,
+                    'searching_paths': searching_paths,
+                    'optional': optional
+                }
+
+                if in_uri not in in_uris:
+                    in_uris.append(in_uri)
             else:
-                assert executable_exists == ('executable' in yaml_config['app']['platforms'][i]), \
-                    'multiplatform items do not match'
-                assert ext_cterm_exists == ('cterm' in yaml_config['app']['platforms'][i]['ext']), \
-                    'multiplatform items do not match'
-                assert ext_adg_exists == ('adg' in yaml_config['app']['platforms'][i]['ext']), \
-                    'multiplatform items do not match'
-        return True
-    return False
+                raise Exception('not handled input format: {}'.format(in_uri))
 
 
-def preprocess_uri_section(uri_section):
-    processed_uri_section = {
-        'input': list(),
-        'output': list()
-    }
+def preprocessing__app_test__processing__out_uri():
+    tmp_out_uris = yaml_config['app_test']['processing']['out_uri']
 
-    for uri in uri_section:
-        assert uri.startswith('file-'), \
-            'parsing uri({}): expected transport: "file"'.format(uri)
-        tmp_uri = uri.split('-')[1]
+    if tmp_out_uris != 'None':
+        for out_uri in tmp_out_uris[:]:
+            if out_uri.startswith('file-'):
+                tmp = out_uri.split('-')[1]
 
-        tmp_uri = tmp_uri.split('://')
-        uri_format = tmp_uri[0]
-        tmp_uri = tmp_uri[1]
+                tmp = tmp.split('://')
+                suffix = tmp[0]
+                tmp = tmp[1]
 
-        tmp_uri = tmp_uri.split('/testFile?')
-        uri_dirs = tmp_uri[0].split('/')
-        tmp_uri = tmp_uri[1]
-        assert 0 < len(uri_dirs) < 3, \
-            'parsing uri({}): expected 1-2 uri directories, but get: {} - {}'.format(uri,
-                                                                                     len(uri_dirs),
-                                                                                     uri_dirs)
+                tmp = tmp.split('/testFile?')
+                path = tmp[0]
+                tmp = tmp[1]
 
-        main_in_dirs = ['_in', '_in_tmp']
-        main_out_dirs = ['_out', '_out_tmp']
-        assert uri_dirs[0] in main_in_dirs or uri_dirs[0] in main_out_dirs, \
-            'parsing uri({}): expected uri_main_dir: {} or {}, but get: {}'.format(uri,
-                                                                                   main_in_dirs,
-                                                                                   main_out_dirs,
-                                                                                   uri_dirs[0])
-        uri_main_dir = uri_dirs[0]
-        if len(uri_dirs) == 2:
-            uri_sub_dir = uri_dirs[1]
-        else:
-            uri_sub_dir = ''
+                params = tmp.split('&')
+                validate = True
+                debug = True
+                for param in params[:]:
+                    if param.startswith('name='):
+                        param_index = params.index(param)
+                        param = param.replace('uriDir', 'output')
+                        param = param.replace('uriIndex', str(len(out_uris)))
+                        params[param_index] = param
+                    elif param.startswith('validate='):
+                        tmp_param = param.split('=')
+                        if tmp_param[1] == 'False':
+                            validate = False
+                        params.remove(param)
+                    elif param.startswith('debug='):
+                        tmp_param = param.split('=')
+                        if tmp_param[1] == 'False':
+                            debug = False
+                        params.remove(param)
 
-        tmp_uri = tmp_uri.split('&')
-        for i in range(len(tmp_uri)):
-            param = tmp_uri[i].split('=')
-            tmp_uri[i] = {param[0]: param[1]}
-        uri_parameters = tmp_uri
+                out_uri = {
+                    'path': path,
+                    'suffix': suffix,
+                    'params': '&'.join(params),
+                    'validate': validate,
+                    'debug': debug
+                }
 
-        uri = {
-            'uri_key': '{}/{}/{}'.format(uri_main_dir, uri_sub_dir, uri_format),
-            'uri_format': uri_format,
-            'uri_main_dir': uri_main_dir,
-            'uri_sub_dir': uri_sub_dir,
-            'uri_parameters': uri_parameters
-        }
-
-        if uri_main_dir in main_in_dirs:
-            if uri not in processed_uri_section['input']:
-                processed_uri_section['input'].append(uri)
-        else:
-            if uri not in processed_uri_section['output']:
-                processed_uri_section['output'].append(uri)
-
-    for i in range(len(processed_uri_section['output'])):
-        searching_key = '{}/{}/{}'.format(processed_uri_section['output'][i]['uri_main_dir'],
-                                          processed_uri_section['output'][i]['uri_sub_dir'],
-                                          'yaml')
-        generate_debug = True
-        for uri in processed_uri_section['output']:
-            if searching_key == uri['uri_key']:
-                generate_debug = False
-                break
-        processed_uri_section['output'][i]['generate_debug'] = generate_debug
-
-        validate = True
-        for j in range(len(processed_uri_section['output'][i]['uri_parameters'])):
-            if 'name' in processed_uri_section['output'][i]['uri_parameters'][j]:
-                processed_uri_section['output'][i]['uri_parameters'][j]['name'] = \
-                    processed_uri_section['output'][i]['uri_parameters'][j]['name'].replace('uriDir', 'output')
-                processed_uri_section['output'][i]['uri_parameters'][j]['name'] = \
-                    processed_uri_section['output'][i]['uri_parameters'][j]['name'].replace('uriIndex', str(i))
-            if 'validate' in processed_uri_section['output'][i]['uri_parameters'][j]:
-                validate = processed_uri_section['output'][i]['uri_parameters'][j]['validate']
-        if {'validate': validate} in processed_uri_section['output'][i]['uri_parameters']:
-            processed_uri_section['output'][i]['uri_parameters'].remove({'validate': validate})
-        processed_uri_section['output'][i]['validate'] = validate
-
-    for i in range(len(processed_uri_section['input'])):
-        searching_ref = False
-        for j in range(len(processed_uri_section['input'][i]['uri_parameters'])):
-            if 'name' in processed_uri_section['input'][i]['uri_parameters'][j]:
-                processed_uri_section['input'][i]['uri_parameters'][j]['name'] = \
-                    processed_uri_section['input'][i]['uri_parameters'][j]['name'].replace('uriDir', 'input')
-                processed_uri_section['input'][i]['uri_parameters'][j]['name'] = \
-                    processed_uri_section['input'][i]['uri_parameters'][j]['name'].replace('uriIndex', str(i))
-            if 'searchingRef' in processed_uri_section['input'][i]['uri_parameters'][j]:
-                searching_ref = processed_uri_section['input'][i]['uri_parameters'][j]['searchingRef']
-        if {'searchingRef': searching_ref} in processed_uri_section['input'][i]['uri_parameters']:
-            processed_uri_section['input'][i]['uri_parameters'].remove({'searchingRef': searching_ref})
-        processed_uri_section['input'][i]['searching_ref'] = searching_ref
-
-    return processed_uri_section
+                if out_uri not in out_uris:
+                    out_uris.append(out_uri)
+            else:
+                raise Exception('not handled output format: {}'.format(out_uri))
 
 
-def postprocess_uri_section(uri_section):
-    processed_uri_section = uri_section
+def preprocessing__app_test__app_config__ini_config__file():
+    ini_config__files = yaml_config['app_test']['app_config']['ini_config']['file']
 
-    for i in range(len(processed_uri_section['output'])):
-        processed_uri = processed_uri_section['output'][i]
-        searching_key = '{}/{}/{}'.format(processed_uri['uri_main_dir'],
-                                          processed_uri['uri_sub_dir'],
-                                          'yaml')
-        generate_debug = True
-        for uri in processed_uri_section['output']:
-            if searching_key == uri['uri_key']:
-                generate_debug = False
-                break
-        processed_uri['generate_debug'] = generate_debug
+    if ini_config__files != 'None':
+        for ini_config__file in ini_config__files[:]:
 
-        validate = True
-        for j in range(len(processed_uri['uri_parameters'])):
-            if 'name' in processed_uri['uri_parameters'][j]:
-                processed_uri['uri_parameters'][j]['name'] = \
-                    processed_uri['uri_parameters'][j]['name'].replace('uriDir', 'output')
-                processed_uri['uri_parameters'][j]['name'] = \
-                    processed_uri['uri_parameters'][j]['name'].replace('uriIndex', str(i))
-            if 'validate' in processed_uri['uri_parameters'][j]:
-                validate = processed_uri['uri_parameters'][j]['validate']
-        if {'validate': validate} in processed_uri['uri_parameters']:
-            processed_uri['uri_parameters'].remove({'validate': validate})
-        processed_uri['validate'] = validate
+            # har
+            if ini_config__file.startswith("'S1APGeo', 'CsvName'"):
+                assert ini_config__file == "'S1APGeo', 'CsvName', testFile", \
+                    'app_test.app_config.ini_config.file got: {}, expected: {}'.format(
+                        ini_config__file,
+                        "'S1APGeo', 'CsvName', testFile")
+                ini_config__files.remove(ini_config__file)
+            if ini_config__file.startswith("'S1APGeo', 'CsvDir'"):
+                path = ini_config__file.split(', ')[2]
+                path = path.strip("'")
+                assert path.startswith('_out'), \
+                    'app_test.app_config.ini_config.file got: {}, expected: {}'.format(
+                        ini_config__file,
+                        "'S1APGeo', 'CsvDir', '_out...'")
+                ini_config__files.remove(ini_config__file)
+                out_geo_csv = {
+                    'path': path,
+                    'suffix': 'csv'
+                }
+                if out_geo_csv not in out_geo_csvs:
+                    out_geo_csvs.append(out_geo_csv)
 
-        tmp_dirs = "'{}'".format(processed_uri['uri_main_dir'])
-        if processed_uri['uri_sub_dir'] != '':
-            tmp_dirs = tmp_dirs + ", '{}'".format(processed_uri['uri_sub_dir'])
-        tmp_dirs = "pathlib.Path.joinpath(program_path, {}, test_file_in.stem + '.{}')"\
-            .format(tmp_dirs, processed_uri['uri_format'])
-        processed_uri['sub_clean'] = tmp_dirs
+    if len(yaml_config['app_test']['app_config']['ini_config']['file']) == 0:
+        del yaml_config['app_test']['app_config']['ini_config']['file']
 
-        tmp_params = ''
-        for j, param in enumerate(processed_uri['uri_parameters']):
-            for key in param:
-                if j != 0:
-                    tmp_params = tmp_params + '&'
-                tmp_params = tmp_params + '{}={}'.format(key, param[key])
-        uri = "'file-{}://{}?{}'.format({})".format(
-            processed_uri['uri_format'],
-            "{}",
-            tmp_params,
-            tmp_dirs
-        )
-        processed_uri['sub_uri'] = uri
 
-    for i in range(len(processed_uri_section['input'])):
-        processed_uri = processed_uri_section['input'][i]
-        searching_ref = False
-        for j in range(len(processed_uri['uri_parameters'])):
-            if 'name' in processed_uri['uri_parameters'][j]:
-                processed_uri['uri_parameters'][j]['name'] = \
-                    processed_uri['uri_parameters'][j]['name'].replace('uriDir', 'input')
-                processed_uri['uri_parameters'][j]['name'] = \
-                    processed_uri['uri_parameters'][j]['name'].replace('uriIndex', str(i))
-            if 'searchingRef' in processed_uri['uri_parameters'][j]:
-                searching_ref = processed_uri['uri_parameters'][j]['searchingRef']
-        if {'searchingRef': searching_ref} in processed_uri['uri_parameters']:
-            processed_uri['uri_parameters'].remove({'searchingRef': searching_ref})
-        processed_uri['searching_ref'] = searching_ref
+def preprocessing__app_test__app_config__runtime_config__file():
+    runtime_config__files = yaml_config['app_test']['app_config']['runtime_config']['file']
 
-        tmp_dirs = "'{}'".format(processed_uri['uri_main_dir'])
-        if processed_uri['uri_sub_dir'] != '':
-            tmp_dirs = tmp_dirs + ", '{}'".format(processed_uri['uri_sub_dir'])
-        tmp_dirs = "pathlib.Path.joinpath(program_path, {}, test_file_in.stem + '.{}')" \
-            .format(tmp_dirs, processed_uri['uri_format'])
+    if runtime_config__files != 'None':
+        for runtime_config__file in runtime_config__files[:]:
 
-        tmp_params = ''
-        for j, param in enumerate(processed_uri['uri_parameters']):
-            for key in param:
-                if j != 0:
-                    tmp_params = tmp_params + '&'
-                tmp_params = tmp_params + '{}={}'.format(key, param[key])
-        uri = "'file-{}://{}?{}'.format({})".format(
-            processed_uri['uri_format'],
-            "{}",
-            tmp_params,
-            tmp_dirs
-        )
-        processed_uri['sub_uri'] = uri
+            # cdr
+            if runtime_config__file.startswith("'CDR', 'DataPathPrimary'") or runtime_config__file.startswith("'CDR', 'IndexPath'"):
+                path = runtime_config__file.split(', ')[2]
+                path = path.strip("'")
+                assert path.startswith('_out') and path.endswith('testFile'), \
+                    'app_test.app_config.runtime_config.file got: {}, expected: {}'.format(
+                        runtime_config__file,
+                        "'CDR', 'DataPathPrimary/IndexPath', '_out/.../testFile'")
+                path = path.split('/testFile')[0]
+                runtime_config__files.remove(runtime_config__file)
+                out_cdr = {
+                    'path': path
+                }
+                if out_cdr not in out_cdrs:
+                    assert len(out_cdrs) == 0, \
+                        'app_test.app_config.runtime_config.file CDR/DataPathPrimary-CDR/IndexPath does not equal'
+                    out_cdrs.append(out_cdr)
 
-    return processed_uri_section
+            # har
+            if runtime_config__file.startswith("'S1APHARWriterRuntime', 'HAROutputBaseName'"):
+                assert runtime_config__file == "'S1APHARWriterRuntime', 'HAROutputBaseName', testFile", \
+                    'app_test.app_config.runtime_config.file got: {}, expected: {}'.format(
+                        runtime_config__file,
+                        "'S1APHARWriterRuntime', 'HAROutputBaseName', testFile")
+                runtime_config__files.remove(runtime_config__file)
+            if runtime_config__file.startswith("'S1APHARWriterRuntime', 'HAROutputDir'"):
+                path = runtime_config__file.split(', ')[2]
+                path = path.strip("'")
+                assert path.startswith('_out'), \
+                    'app_test.app_config.runtime_config.file got: {}, expected: {}'.format(
+                        runtime_config__file,
+                        "'S1APHARWriterRuntime', 'HAROutputDir', '_out...'")
+                runtime_config__files.remove(runtime_config__file)
+                out_har = {
+                    'path': path,
+                    'suffix': '001'
+                }
+                if out_har not in out_hars:
+                    out_hars.append(out_har)
+
+            # s1ap_dump
+            if runtime_config__file.startswith("'S1APAssembler', 'DumpFile'"):
+                path = runtime_config__file.split(', ')[2]
+                path = path.strip("'")
+                assert path.startswith('_out') and path.endswith('testFile'), \
+                    'app_test.app_config.runtime_config.file got: {}, expected: {}'.format(
+                        runtime_config__file,
+                        "'S1APAssembler', 'DumpFile', '_out/.../testFile'")
+                path = path.split('/testFile')[0]
+                runtime_config__files.remove(runtime_config__file)
+                out_s1ap_dump = {
+                    'path': path,
+                    'suffix': 's1ap'
+                }
+                if out_s1ap_dump not in out_s1ap_dumps:
+                    out_s1ap_dumps.append(out_s1ap_dump)
+
+    if len(yaml_config['app_test']['app_config']['runtime_config']['file']) == 0:
+        del yaml_config['app_test']['app_config']['runtime_config']['file']
+
+
+def create_dirs():
+
+    in_dirs = list()
+    out_dirs = list()
+    ref_dirs = list()
+
+    # in
+    for in_uri in in_uris:
+        test_file_dir = resolve_path(env_dir, in_uri['path'])
+        if test_file_dir not in in_dirs:
+            in_dirs.append(test_file_dir)
+            test_file_dir.mkdir(parents=True, exist_ok=True)
+            dir_link_path = resolve_path(test_file_dir, '_path_links.cfg')
+            if in_uri['searching']:
+                try:
+                    file = open(dir_link_path, 'w')
+                    for searching_path in in_uri['searching_paths']:
+                        file.write(searching_path + '\n')
+                except Exception as e:
+                    raise Exception(e)
+                finally:
+                    file.close()
+            else:
+                if dir_link_path.exists():
+                    dir_link_path.unlink()
+
+    # out
+    for out_case in out_uris + out_cdrs + out_hars + out_s1ap_dumps + out_geo_csvs:
+        test_file_dir = resolve_path(env_dir, out_case['path'])
+        if test_file_dir not in out_dirs:
+            out_dirs.append(test_file_dir)
+        ref_file_dir = resolve_path(env_dir, '_ref' + out_case['path'])
+        if ref_file_dir not in ref_dirs:
+            ref_dirs.append(ref_file_dir)
+
+    for test_file_dir in in_dirs + out_dirs + ref_dirs:
+        test_file_dir.mkdir(parents=True, exist_ok=True)
+        logger.info('check test_file_dir: {}'.format(test_file_dir))
 
 
 # main
 
-logger = Logger(name=program_path.stem, level='DEBUG')
+args = parse_args()
 
+logger = Logger(name=program_path.stem, level=args.report_level)
 
 # load yaml_config_file
+
+test_dir = pathlib.Path(program_path.parent, args.test_dir)
 
 class NullUndefined(jinja2.Undefined):
     def __getattr__(self, key):
@@ -326,39 +418,62 @@ yaml_template = jinja2.Template(str(yaml.load(open(file=yaml_config_file, mode='
                                 undefined=NullUndefined)
 yaml_config = yaml.safe_load(yaml_template.render(yaml.safe_load(yaml_template.render())))
 
-
 # preprocessing yaml_config_file
 
-check_multiplatform()
-uri_config = yaml_config['app_test']['processing']['uri']
-uri_config = preprocess_uri_section(uri_config)
-uri_config = postprocess_uri_section(uri_config)
+if yaml_config['env']['name'] != "":
+    yaml_config['env']['lib'] = '../' + yaml_config['env']['lib']
+    yaml_config['app']['dir'] = '../' + yaml_config['app']['dir']
 
+if len(yaml_config['app']['platforms']) > 1:
+    check_multiplatform_elements()
+
+in_uris = list()
+out_uris = list()
+out_cdrs = list()
+out_geo_csvs = list()
+out_hars = list()
+out_s1ap_dumps = list()
+
+preprocessing__app_test__processing__in_uri()
+preprocessing__app_test__processing__out_uri()
+preprocessing__app_test__app_config__ini_config__file()
+preprocessing__app_test__app_config__runtime_config__file()
 
 # check environment
 
-env_dir = pathlib.Path.joinpath(test_dir, yaml_config['env']['dir']).resolve()
+env_dir = resolve_path(test_dir, yaml_config['env']['dir'])
 create_env_dir()
 
 create_default_ini()
 
+create_dirs()
 
 # generate template
 
 jinja2_file_loader = jinja2.FileSystemLoader('temp-func_test')
+
 jinja2_env = jinja2.Environment(loader=jinja2_file_loader,
+                                extensions=['jinja2.ext.do', 'jinja2.ext.loopcontrols', 'jinja2.ext.debug'],
                                 trim_blocks=False,
                                 lstrip_blocks=False,
                                 keep_trailing_newline=True)
 jinja2_template = jinja2_env.get_template('temp-func_test.j2')
+
 test_file_content = jinja2_template.render(config=yaml_config,
-                                           uri_config=uri_config).replace('# j2-temp #\n', '')
+                                           in_uris=in_uris,
+                                           out_uris=out_uris,
+                                           out_cdrs=out_cdrs,
+                                           out_geo_csvs=out_geo_csvs,
+                                           out_hars=out_hars,
+                                           out_s1ap_dumps=out_s1ap_dumps)
+test_file_content = test_file_content.replace('# j2-temp #\n', '')
+test_file_content = test_file_content.replace('# j2-temp #', '')
 # print('test_file_content: {}'.format(test_file_content))
 
 # write template
 
 test_file = pathlib.Path(env_dir, yaml_config['app_test']['name'] + '.py')
-if not test_file.exists() or recreate_test_file:
+if not test_file.exists() or args.recreate_test_file:
     test_file_handler = open(test_file, 'w')
     test_file_handler.write(test_file_content + '\n')
     test_file_handler.close

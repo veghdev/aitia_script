@@ -1,18 +1,17 @@
-{% include 'variables/variables.base.j2' %}
+# j2-temp #
+{% include 'variables/variables.init.j2' %}
 
-{% include 'variables/variables.ext.j2' %}
+{% include 'variables/variables.options.j2' %}
 
-{%- if flags.test_files_to_skip %}
+{%- if flags.app__platforms.utilities_exists %}{{"\n\n"}}{% include 'variables/variables.utilities.j2' %}{%- endif %}
 
-{% include 'variables/variables.test_files_to_skip.j2' %}
-{%- endif %}
+{%- if flags.in.exists %}{{"\n\n"}}{% include 'variables/variables.in.j2' %}{%- endif %}
 
-{%- if flags.specific_file_ini_config %}
+{%- if flags.out.exists %}{{"\n\n"}}{% include 'variables/variables.out.j2' %}{%- endif %}
 
-{% include 'variables/variables.specific_file_ini_config.j2' %}
-{%- endif %}
+{%- if flags.app_test__processing.test_files_to_skip %}{{"\n\n"}}{% include 'variables/variables.test_files_to_skip.j2' %}{%- endif %}
 
-{%- if flags.specific_file_runtime_config %}
+{%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n\n"}}{% include 'variables/variables.ini_config__specific_file.j2' %}{%- endif %}
 
-{% include 'variables/variables.specific_file_runtime_config.j2' %}
-{%- endif %}
+{%- if flags.app_test__app_config__runtime_config.specific_file %}{{"\n\n"}}{% include 'variables/variables.runtime_config__specific_file.j2' %}{%- endif %}
+# j2-temp #

@@ -1,11 +1,25 @@
 # j2-temp #
-{% include 'main/main.options.j2'%}
-
-logger.info('started testing')
-
+{% macro include(item) %}{% include item %}{% endmacro %}
+# j2-temp #
 {% include 'main/main.init.j2'%}
 
-{% include 'main/main.processing.j2'%}
+try:
+{{ include('main/main.options.j2') | indent(4, False) }}
 
-logger.info('finished testing')
+    logger.info('started testing')
+
+{{ include('main/main.results.j2') | indent(4, False) }}
+
+{{ include('main/main.controls.j2') | indent(4, False) }}
+
+{{ include('main/main.testing.j2') | indent(4, False) }}
+
+    logger.info('finished testing')
+
+    report()
+except Exception as e:
+    tb = traceback.format_exc()
+    logger.critical('UNEXPECTED ERROR: {}\n{}'.format(e, tb))
+    # traceback.print_exc()
+    exit(1)
 # j2-temp #

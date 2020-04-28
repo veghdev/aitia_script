@@ -1,0 +1,96 @@
+# j2-temp #
+{%- macro check(item) %}
+out_file = resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix'])
+ref_file = resolve_path(program_path.parent, '_ref' + {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix'])
+
+if out_file.exists():
+    if ref_file.exists():
+         if filecmp.cmp(out_file, ref_file):
+            {%- if in_uris | length > 1 %}
+            {%- if not flags.in.uri__optional %}
+            if input_file not in results['FAILED']:
+                results['PASSED'][input_file] = result
+                logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
+            {%- elif flags.in.uri__optional and flags.in.uri__different__optional %}
+            if input_file not in results['FAILED']:
+                results['PASSED'][input_file] = result
+                logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
+            {%- endif  %}
+            {%- else  %}
+            results['PASSED'][input_file] = result
+            logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
+            {%- endif %}
+         else:
+            results['FAILED'][input_file] = result
+            logger.error('   FAILED: {} - content does not equal'.format(os.path.relpath(out_file, program_path.parent)))
+    else:
+        results['FAILED'][input_file] = result
+        logger.error('   FAILED: {} - ref does not exist: {}'.format(os.path.relpath(out_file, program_path.parent), os.path.relpath(ref_file, program_path.parent)))
+else:
+    results['FAILED'][input_file] = result
+    logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out_file, program_path.parent)))
+{%- endmacro %}
+# j2-temp #
+def check_output():
+    {%- if flags.out.uri__exists %}
+    {%- if flags.out.uri__validate%}
+    {%- if out_uris | length > 1%}
+    for out_uri in out_uris:
+        {%- if flags.out.uri__different__validate%}
+        if out_uri['validate']:
+            {{- check('out_uri') | indent(12, True) }}
+        {%- else %}
+        {%- if flags.out.uri__validate%}
+        {{- check('out_uri') | indent(8, True) }}
+        {%- endif %}
+        {%- endif %}
+    {%- else %}
+    {{- check('out_uri') | indent(4, True) }}
+    {%- endif %}
+    {%- endif %}
+    {%- endif %}
+
+	{%- if flags.out.geo_csv__exists %}
+    {{- check('out_geo_csv') | indent(4, True) }}
+    {%- endif %}
+
+    {%- if flags.out.har__exists %}
+    {{- check('out_har') | indent(4, True) }}
+    {%- endif %}
+	
+	{%- if flags.out.s1ap_dump__exists %}
+    {{- check('out_s1ap_dump') | indent(4, True) }}
+    {%- endif %}
+
+    {%- if flags.out.cdr__exists %}
+    def dircmp(out, ref):
+        equals = True
+        cmp = filecmp.dircmp(out, ref)
+        if cmp.diff_files:
+            equals = False
+            for item in cmp.diff_files:
+                logger.error('   FAILED: {} - content does not equal'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
+        if cmp.left_only:
+            equals = False
+            for item in cmp.left_only:
+                logger.error('   FAILED: {} - ref does not exist'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
+        if cmp.right_only:
+            equals = False
+            for item in cmp.right_only:
+                logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(resolve_path(out, item), program_path.parent)))
+
+        for item in cmp.common_dirs:
+            if not dircmp(resolve_path(out, item), resolve_path(ref, item)):
+                equals = False
+
+        return equals
+
+    out_file = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
+    ref_file = resolve_path(program_path.parent, '_ref' + out_cdr['path'], input_file.stem)
+    if dircmp(out_file, ref_file):
+        results['PASSED'][input_file] = result
+        logger.info('   PASSED: {}'.format(os.path.relpath(out_file, program_path.parent)), foreground_color='light green')
+    else:
+        results['FAILED'][input_file] = result
+    {%- endif %}
+# j2-temp #

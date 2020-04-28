@@ -1,0 +1,12 @@
+# j2-temp #
+{%- if out_geo_csvs | length > 1 %}
+out_geo_csvs = [
+{%- for item in out_geo_csvs %}
+    {{ item }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+out_geo_csv = {{ out_geo_csvs[0] }}
+{%- endif %}
+# j2-temp #

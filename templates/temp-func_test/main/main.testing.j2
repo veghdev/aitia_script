@@ -1,0 +1,19 @@
+# j2-temp #
+initialize_ini()
+{%- if not flags.app_test__app_config__ini_config.file and not flags.app_test__app_config__ini_config.specific_file and not flags.out.geo_csv__exists %}{{"\n"}}initialize_app(){%- endif %}
+for input_file in find_input_files():
+    {%- if flags.app_test__processing.test_files_to_skip %}
+    if input_file.name in test_files_to_skip:
+        logger.debug('   skipped: {} - exists in test_files_to_skip'.format(os.path.relpath(input_file, program_path.parent)))
+        continue
+    {%- endif %}
+    result = dict()
+    processing()
+{%- if not flags.app_test__app_config__ini_config.file and not flags.app_test__app_config__ini_config.specific_file and not flags.out.geo_csv__exists %}
+stop_app()
+{%- elif not flags.app_test__app_config__ini_config.file and flags.app_test__app_config__ini_config.specific_file and not flags.out.geo_csv__exists %}
+if app.is_running():
+    stop_app()
+{%- endif %}
+clean_ini()
+# j2-temp #

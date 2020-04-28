@@ -1,13 +1,43 @@
 # j2-temp #
+{%- macro collect_path(item, length) %}
+{%- if length > 1 %}
+# {{ item }}
+for {{ item }} in {{ item }}s:
+    if {{ item }}['path'] not in paths:
+        paths.append(resolve_path(program_path.parent, {{ item }}['path']))
+{%- else %}
+# {{ item }}
+if {{ item }}['path'] not in paths:
+    paths.append(resolve_path(program_path.parent, {{ item }}['path']))
+{%- endif %}
+{%- endmacro %}
+# j2-temp #
 def clean():
-    files = [
-    {%- for item in uri_config.output %}
-        {{ item.sub_clean }}
-        {{- "," if not loop.last }}
-    {%- endfor %}
-    ]
+    if resolve_path(program_path.parent, 'report').exists():
+        shutil.rmtree(resolve_path(program_path.parent, 'report'))
 
-    for file in files:
-        if file.exists():
+    {%- if flags.out.exists %}
+    {%- if flags.out.cdr__exists %}
+
+    for dir in resolve_path(program_path.parent, out_cdr['path']).iterdir():
+        shutil.rmtree(dir)
+    {%- else %}
+
+    paths = list()
+
+    {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_path('out_uri', out_uris | length) | indent(4, True) }}{%- endif %}
+	
+	{%- if flags.out.geo_csv__exists %}{{"\n"}}{{ collect_path('out_geo_csv', out_geo_csvs | length) | indent(4, True) }}{%- endif %}
+
+    {%- if flags.out.har__exists %}{{"\n"}}{{ collect_path('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
+	
+	{%- if flags.out.s1ap_dump__exists %}{{"\n"}}{{ collect_path('out_s1ap_dump', out_s1ap_dumps | length) | indent(4, True) }}{%- endif %}
+
+    for path in paths:
+        for file in path.iterdir():
             file.unlink()
+    {%- endif %}
+    {%- endif %}
+
+    exit(0)
 # j2-temp #

@@ -1,3 +1,12 @@
 def stop_app():
-    app.save_config()
-    app.stop()
+    {%- if flags.app_test__app_config__post_commands.global %}
+    # send post command (global)
+    {%- for item in config.app_test.app_config.post_commands.global %}
+    app.send_command({{ item }})
+    {%- endfor %}
+
+    app_pid = app.stop()
+    {%- else %}
+    app_pid = app.stop()
+    {%- endif %}
+    logger.debug('   stopped pid: {}'.format(app_pid))

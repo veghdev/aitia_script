@@ -1,0 +1,62 @@
+# j2-temp #
+def processing():
+    logger.info('{}:'.format(os.path.relpath(input_file, program_path.parent)))
+    {%- if flags.subroutines.clean_output %}
+    clean_output()
+    {%- endif %}
+    {%- if flags.app_test__processing.preprocessing %}
+    preprocessing()
+    {%- endif %}
+    {%- if flags.app_test__app_config__ini_config.file or flags.out.geo_csv__exists %}
+    ini_config = set_up_ini_config()
+    initialize_app()
+    {%- elif flags.app_test__app_config__ini_config.specific_file %}
+    if input_file.name in ini_config__specific_file:
+        if app.is_running():
+            stop_app()
+        ini_config = set_up_ini_config()
+    if not app.is_running():
+        initialize_app()
+    {%- endif %}
+    {%- if flags.app_test__app_config__runtime_config.file or flags.out.cdr__exists or flags.out.har__exists or flags.out.s1ap_dump__exists %}
+    runtime_config = set_up_runtime_config()
+    {%- elif flags.app_test__app_config__runtime_config.specific_file %}
+    if input_file.name in runtime_config__specific_file:
+        runtime_config = set_up_runtime_config()
+    {%- endif %}
+    {%- if flags.subroutines.configure_output %}
+    configure_output()
+    {%- endif %}
+    {%- if flags.subroutines.configure_input %}
+    configure_input()
+    {%- endif %}
+    app.start_proc()
+    app.stop_proc_sync()
+    app.state_flush()
+    {%- if flags.subroutines.deconfigure_input %}
+    deconfigure_input()
+    {%- endif %}
+    {%- if flags.subroutines.deconfigure_output %}
+    deconfigure_output()
+    {%- endif %}
+    app.state_clear()
+    app.counters_clear()
+    {%- if flags.app_test__app_config__runtime_config.file or flags.out.cdr__exists or flags.out.har__exists or flags.out.s1ap_dump__exists %}
+    restore_runtime_config(runtime_config)
+    {%- elif flags.app_test__app_config__runtime_config.specific_file %}
+    if input_file.name in runtime_config__specific_file:
+        restore_runtime_config(runtime_config)
+    {%- endif %}
+    {%- if flags.app_test__app_config__ini_config.file or flags.out.geo_csv__exists %}
+    stop_app()
+    restore_ini_config(ini_config)
+    {%- elif flags.app_test__app_config__ini_config.specific_file %}
+    if input_file.name in ini_config__specific_file:
+        stop_app()
+        restore_ini_config(ini_config)
+    {%- endif %}
+    {%- if flags.app_test__processing.postprocessing %}
+    postprocessing()
+    {%- endif %}
+    {%- if flags.subroutines.check_output %}{{"\n"}}    check_output(){%- endif %}
+# j2-temp #

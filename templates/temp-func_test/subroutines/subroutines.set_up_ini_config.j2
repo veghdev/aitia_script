@@ -3,7 +3,7 @@ def set_up_ini_config():
     ini = Ini(app_ini_path)
     ans = list()
 
-    def ans_conditional_append(ans_dict):
+    def append_ans(ans_dict):
         ans_already_exists = False
         for item in ans:
             if ans_dict['section'] == item['section'] and ans_dict['parameter'] == item['parameter']:
@@ -12,25 +12,33 @@ def set_up_ini_config():
         if not ans_already_exists:
             ans.append(ans_dict)
 
-    {%- if flags.file_ini_config %}
+    {%- if flags.app_test__app_config__ini_config.file %}
 
-    # set file ini config
+    # set ini config (file)
     {%- for item in config.app_test.app_config.ini_config.file %}
-    ans_conditional_append(ini.modify_parameter({{ item }}))
+    append_ans(ini.set_up_parameter({{ item }}))
     {%- endfor %}
     {%- endif %}
+	
+	{%- if flags.out.geo_csv__exists %}
 
-    {%- if flags.specific_file_ini_config %}
+    # set out_geo_csv
+    append_ans(ini.set_up_parameter('S1APGeo', 'CsvName', input_file.stem + '.' + out_geo_csv['suffix']))
+    append_ans(ini.set_up_parameter('S1APGeo', 'CsvDir', str(resolve_path(program_path.parent, out_geo_csv['path']))))
+    {%- endif %}
 
-    # set specific_file ini config
-    {%- if flags.file_ini_config %}
-    if test_file_in.name in specific_file_ini_config:
-        ans_conditional_append(ini.modify_parameter(*specific_file_ini_config[test_file_in.name]))
+    {%- if flags.app_test__app_config__ini_config.specific_file %}
+
+    # set ini config (specific_file)
+    {%- if flags.app_test__app_config__ini_config.file %}
+    if input_file.name in ini_config__specific_file:
+        append_ans(ini.set_up_parameter(*ini_config__specific_file[input_file.name]))
     {%- else %}
-    ans_conditional_append(ini.modify_parameter(*specific_file_ini_config[test_file_in.name]))
+    append_ans(ini.set_up_parameter(*ini_config__specific_file[input_file.name]))
     {%- endif %}
     {%- endif %}
 
     ini.write_content_to_file()
+
     return ans
 # j2-temp #

@@ -1,0 +1,16 @@
+# j2-temp #
+{%- macro resolve_item(item) -%}
+{'path': '{{ item.path }}', 'suffix': '{{ item.suffix }}', 'params': '{{ item.params }}'{%- if flags.out.uri__different__validate -%}, 'validate': {{ item.validate }}{%- endif -%}{%- if flags.out.uri__different__debug -%}, 'debug': {{ item.debug }}{%- endif -%}}
+{%- endmacro %}
+# j2-temp #
+{%- if out_uris | length > 1 %}
+out_uris = [
+{%- for item in out_uris %}
+    {{ resolve_item(item) }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+out_uri = {{ resolve_item( out_uris[0]) }}
+{%- endif %}
+# j2-temp #

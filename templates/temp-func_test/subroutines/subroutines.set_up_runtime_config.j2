@@ -1,36 +1,54 @@
 # j2-temp #
 def set_up_runtime_config():
-    ans = list()
+    set_up_list = list()
 
-    def ans_conditional_append(ans_dict):
+    def append_ans(ans_dict):
         ans_already_exists = False
-        for item in ans:
-            if ans_dict['section'] == item['section'] and ans_dict['parameter'] == item['parameter']:
+        for ans in set_up_list:
+            if ans_dict['section'] == ans['section'] and ans_dict['parameter'] == ans['parameter']:
                 ans_already_exists = True
                 break
         if not ans_already_exists:
-            ans.append(ans_dict)
+            set_up_list.append(ans_dict)
 
-    {%- if flags.file_runtime_config %}
+    {%- if flags.out.cdr__exists %}
 
-    # set file runtime config
+    # set out_cdr
+    append_ans(app.set_config('CDR', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path'], input_file.stem))))
+    append_ans(app.set_config('CDR', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path'], input_file.stem))))
+    {%- endif %}
+
+    {%- if flags.out.har__exists %}
+
+    # set out_har
+    append_ans(app.set_config('S1APHARWriterRuntime', 'HAROutputBaseName', input_file.stem))
+    append_ans(app.set_config('S1APHARWriterRuntime', 'HAROutputDir', str(resolve_path(program_path.parent, out_har['path']))))
+    {%- endif %}
+	
+	{%- if flags.out.s1ap_dump__exists %}
+
+    # set out_s1ap_dump
+    append_ans(app.set_config('S1APAssembler', 'DumpFile', str(resolve_path(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix']))))
+    {%- endif %}
+
+    {%- if flags.app_test__app_config__runtime_config.file %}
+
+    # set runtime config (file)
     {%- for item in config.app_test.app_config.runtime_config.file %}
-    ans_conditional_append(app.set_config({{ item }}))
+    append_ans(app.set_config({{ item }}))
     {%- endfor %}
     {%- endif %}
 
-    {%- if flags.specific_file_runtime_config %}
+    {%- if flags.app_test__app_config__runtime_config.specific_file %}
 
-    # set specific_file runtime config
+    # set runtime config (specific_file)
     {%- if flags.file_runtime_config %}
-    if test_file_in.name in specific_file_runtime_config:
-        ans_conditional_append(app.set_config(*specific_file_runtime_config[test_file_in.name]))
+    if input_file.name in runtime_config__specific_file:
+        append_ans(app.set_config(*runtime_config__specific_file[input_file.name]))
     {%- else %}
-    ans_conditional_append(app.set_config(*specific_file_runtime_config[test_file_in.name]))
+    append_ans(app.set_config(*runtime_config__specific_file[input_file.name]))
     {%- endif %}
     {%- endif %}
 
-    app.save_config()
-
-    return ans
+    return set_up_list
 # j2-temp #

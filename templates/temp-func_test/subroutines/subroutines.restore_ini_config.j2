@@ -1,9 +1,9 @@
 # j2-temp #
-def restore_ini_config(changelist):
+def restore_ini_config(ini_config):
     ini = Ini(app_ini_path)
 
-    for item in changelist:
-        ini.modify_parameter(item['section'], item['parameter'], item['prev_value'])
+    for item in ini_config:
+        ini.set_up_parameter(item['section'], item['parameter'], item['prev_value'])
 
     ini.write_content_to_file()
 # j2-temp #

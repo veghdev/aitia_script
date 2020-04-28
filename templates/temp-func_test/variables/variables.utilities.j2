@@ -1,0 +1,14 @@
+# j2-temp #
+{%- if flags.app__platforms.cross_platform %}
+{%- for item in config.app.platforms %}
+if program_platform == '{{ item.platform }}':
+    {%- if flags.app__platforms.utilities__cterm %}{{"\n"}}    cterm_path = resolve_path(bin_path, '{{ item.utilities.cterm }}'){%- endif %}
+    {%- if flags.app__platforms.utilities__adg %}{{"\n"}}    adg_path = resolve_path(bin_path, '{{ item.utilities.adg }}'){%- endif %}
+{%- endfor %}
+{%- else %}
+{%- for item in config.app.platforms %}
+{%- if flags.app__platforms.utilities__cterm %}{{"\n"}}cterm_path = resolve_path(bin_path, '{{ item.utilities.cterm }}'){%- endif %}
+{%- if flags.app__platforms.utilities__adg %}{{"\n"}}adg_path = resolve_path(bin_path, '{{ item.utilities.adg }}'){%- endif %}
+{%- endfor %}
+{%- endif %}
+# j2-temp #

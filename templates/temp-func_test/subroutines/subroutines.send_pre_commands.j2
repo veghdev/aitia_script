@@ -1,0 +1,5 @@
+def send_pre_commands():
+    # send file pre commands
+    {%- for item in config.app_test.app_config.pre_commands.file %}
+    app.send_command({{ item }})
+    {%- endfor %}

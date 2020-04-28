@@ -3,12 +3,12 @@ def initialize_ini():
         app_ini_path.unlink()
     shutil.copy2(base_ini_path, app_ini_path)
 
-{%- if flags.global_ini_config %}
+    {%- if flags.app_test__app_config__ini_config.global %}
 
-    # set global ini config
+    # set ini config (global)
     ini = Ini(app_ini_path)
     {%- for item in config.app_test.app_config.ini_config.global %}
-    ini.modify_parameter({{ item }})
+    ini.set_up_parameter({{ item }})
     {%- endfor %}
     ini.write_content_to_file()
-{%- endif %}
+    {%- endif %}

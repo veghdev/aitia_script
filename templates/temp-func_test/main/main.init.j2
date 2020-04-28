@@ -1,7 +1,11 @@
 # j2-temp #
+if args.clean:
+    clean()
+
 if not report_path.exists():
     report_path.mkdir(parents=True, exist_ok=True)
+logger = Logger(name=program_path.stem, level=report_level, file=report_path)
 
-cterm = CtermInterface(cterm=cterm_path)
-app = Control(cterm_interface=cterm, ip='127.0.0.1', port=app_port, app=app_path)
+if args.remove:
+    remove()
 # j2-temp #

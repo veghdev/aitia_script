@@ -1,0 +1,48 @@
+# j2-temp #
+def resolve_path_links(path):
+    {%- if flags.in.uri__additional__searching %}
+    if 'resolved_path_links' not in globals():
+        global resolved_path_links
+        resolved_path_links = dict()
+
+    if path not in resolved_path_links:
+        path_links = list()
+
+        if resolve_path(path, '_path_links.cfg').exists():
+            try:
+                file = open(resolve_path(path, '_path_links.cfg'), 'r')
+                line = file.readline()
+                while line:
+                    path_link = resolve_path(path, line.strip())
+                    if path_link not in path_links:
+                        path_links.append(path_link)
+                    line = file.readline()
+            except Exception as e:
+                raise Exception(e)
+            finally:
+                file.close()
+
+        resolved_path_links[path] = path_links
+        return resolved_path_links[path]
+    else:
+        return resolved_path_links[path]
+    {%- else %}
+    path_links = list()
+
+    if resolve_path(path, '_path_links.cfg').exists():
+        try:
+            file = open(resolve_path(path, '_path_links.cfg'), 'r')
+            line = file.readline()
+            while line:
+                path_link = resolve_path(path, line.strip())
+                if path_link not in path_links:
+                    path_links.append(path_link)
+                line = file.readline()
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            file.close()
+
+    return path_links
+    {%- endif %}
+# j2-temp #

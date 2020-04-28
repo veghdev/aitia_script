@@ -1,6 +1,8 @@
+# j2-temp #
 test_files_to_skip = [
 {%- for item in config.app_test.processing.test_files_to_skip %}
     '{{ item }}'
     {{- "," if not loop.last }}
 {%- endfor %}
 ]
+# j2-temp #

@@ -1,18 +1,22 @@
 def initialize_app():
-    app.start()
+    app_pid = app.start()
+    logger.debug('   started app: {}, version: {}, build: {}, pid: {}'.format(app.send_command('app.name')['value'],
+                                                                              app.send_command('app.version', 'v')['value'],
+                                                                              app.send_command('app.version', 'b')['value'],
+                                                                              app_pid))
 
-{%- if flags.initialize_commands %}
+    {%- if flags.app_test__app_config__runtime_config.global %}
 
-    # send initialize command
-    {%- for item in config.app_test.app_config.initialize_commands %}
-    app.send_command({{ item }})
-    {%- endfor %}
-{%- endif %}
-
-{%- if flags.global_runtime_config %}
-
-    # set global runtime config
+    # set runtime config (global)
     {%- for item in config.app_test.app_config.runtime_config.global %}
     app.set_config({{ item }})
     {%- endfor %}
-{%- endif %}
+    {%- endif %}
+
+    {%- if flags.app_test__app_config__pre_commands.global %}
+
+    # send pre command (global)
+    {%- for item in config.app_test.app_config.pre_commands.global %}
+    app.send_command({{ item }})
+    {%- endfor %}
+    {%- endif %}

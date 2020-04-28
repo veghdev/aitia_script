@@ -1,6 +1,8 @@
-specific_file_ini_config = {
+# j2-temp #
+ini_config__specific_file = {
 {%- for item in config.app_test.app_config.ini_config.specific_file %}
     '{{ item }}': [{{ config.app_test.app_config.ini_config.specific_file[item] }}]
     {{- "," if not loop.last }}
 {%- endfor %}
 }
+# j2-temp #

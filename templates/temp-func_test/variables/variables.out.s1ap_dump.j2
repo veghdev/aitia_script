@@ -1,0 +1,12 @@
+# j2-temp #
+{%- if out_s1ap_dumps | length > 1 %}
+out_s1ap_dumps = [
+{%- for item in out_s1ap_dumps %}
+    {{ item }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+out_s1ap_dump = {{ out_s1ap_dumps[0] }}
+{%- endif %}
+# j2-temp #

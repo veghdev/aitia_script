@@ -1,2 +1,5 @@
+# j2-temp #
 def clean_ini():
-    app_ini_path.unlink()
+    if app_ini_path.exists():
+        app_ini_path.unlink()
+# j2-temp #

@@ -1,86 +1,74 @@
-{% include 'subroutines/subroutines.find_free_port.j2' %}
+# j2-temp #
+{% include 'subroutines/subroutines.parse_args.j2' %}
+
+
+{% include 'subroutines/subroutines.resolve_path.j2' %}
+
+
+{%- if flags.subroutines.resolve_path_links %}{{"\n\n\n"}}{% include 'subroutines/subroutines.resolve_path_links.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.find_input_files %}{{"\n\n\n"}}{% include 'subroutines/subroutines.find_input_files.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.find_additional_input_file %}{{"\n\n\n"}}{% include 'subroutines/subroutines.find_additional_input_file.j2' %}{%- endif %}
 
 
 {% include 'subroutines/subroutines.initialize_ini.j2' %}
 
 
-{% include 'subroutines/subroutines.clean.j2' %}
+{%- if flags.subroutines.set_up_ini_config %}{{"\n\n\n"}}{% include 'subroutines/subroutines.set_up_ini_config.j2' %}{%- endif %}
 
 
-{%- if flags.preprocessing %}
+{%- if flags.subroutines.restore_ini_config %}{{"\n\n\n"}}{% include 'subroutines/subroutines.restore_ini_config.j2' %}{%- endif %}
 
 
-{% include 'subroutines/subroutines.preprocessing.j2' %}
-{%- endif %}
-
-
-{%- if flags.file_ini_config or flags.specific_file_ini_config %}
-
-
-{% include 'subroutines/subroutines.set_up_ini_config.j2' %}
-{%- endif %}
+{% include 'subroutines/subroutines.find_free_port.j2' %}
 
 
 {% include 'subroutines/subroutines.initialize_app.j2' %}
 
-
-{%- if flags.uri_input %}
-
-
-{% include 'subroutines/subroutines.configure_input.j2' %}
-{%- endif %}
+{%- if flags.subroutines.set_up_runtime_config %}{{"\n\n\n"}}{% include 'subroutines/subroutines.set_up_runtime_config.j2' %}{%- endif %}
 
 
-{%- if flags.uri_output %}
+{%- if flags.subroutines.restore_runtime_config %}{{"\n\n\n"}}{% include 'subroutines/subroutines.restore_runtime_config.j2' %}{%- endif %}
 
 
-{% include 'subroutines/subroutines.configure_output.j2' %}
-{%- endif %}
+{%- if flags.app_test__processing.preprocessing %}{{"\n\n\n"}}{% include 'subroutines/subroutines.preprocessing.j2' %}{%- endif %}
 
 
-{%- if flags.file_runtime_config or flags.specific_file_runtime_config %}
-
-
-{% include 'subroutines/subroutines.set_up_runtime_config.j2' %}
-{%- endif %}
-
-
-{%- if flags.file_runtime_config or flags.specific_file_runtime_config %}
-
-
-{% include 'subroutines/subroutines.restore_runtime_config.j2' %}
-{%- endif %}
-
-
-{%- if flags.uri_input %}
-
-
-{% include 'subroutines/subroutines.deconfigure_input.j2' %}
-{%- endif %}
-
-
-{%- if flags.uri_output %}
-
-
-{% include 'subroutines/subroutines.deconfigure_output.j2' %}
-{%- endif %}
+{%- if flags.app_test__processing.postprocessing %}{{"\n\n\n"}}{% include 'subroutines/subroutines.postprocessing.j2' %}{%- endif %}
 
 
 {% include 'subroutines/subroutines.stop_app.j2' %}
 
 
-{%- if flags.file_ini_config or flags.specific_file_ini_config %}
-
-
-{% include 'subroutines/subroutines.restore_ini_config.j2' %}
-{%- endif %}
-
-
-{%- if flags.postprocessing %}
-
-
-{% include 'subroutines/subroutines.postprocessing.j2' %}
-{%- endif %}
-
-
 {% include 'subroutines/subroutines.clean_ini.j2' %}
+
+
+{%- if flags.subroutines.clean_output %}{{"\n\n\n"}}{% include 'subroutines/subroutines.clean_output.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.configure_input %}{{"\n\n\n"}}{% include 'subroutines/subroutines.configure_input.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.deconfigure_input %}{{"\n\n\n"}}{% include 'subroutines/subroutines.deconfigure_input.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.configure_output %}{{"\n\n\n"}}{% include 'subroutines/subroutines.configure_output.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.deconfigure_output %}{{"\n\n\n"}}{% include 'subroutines/subroutines.deconfigure_output.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.check_output %}{{"\n\n\n"}}{% include 'subroutines/subroutines.check_output.j2' %}{%- endif %}
+
+
+{% include 'subroutines/subroutines.processing.j2' %}
+
+
+{% include 'subroutines/subroutines.report.j2' %}
+
+
+{% include 'subroutines/subroutines.clean.j2' %}
+# j2-temp #

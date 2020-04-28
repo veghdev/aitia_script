@@ -1,0 +1,13 @@
+# j2-temp #
+def report():
+    logger.info('runtime: {} sec'.format(time.time() - program_time))
+    if len(results['PASSED']) == 0 and len(results['FAILED']) == 0:
+        logger.warning('results: PASSED: {} / FAILED: {}'.format(len(results['PASSED']), len(results['FAILED'])))
+        exit(3)
+    elif len(results['FAILED']) != 0:
+        logger.error('results: PASSED: {} / FAILED: {}'.format(len(results['PASSED']), len(results['FAILED'])))
+        exit(2)
+    else:
+        logger.info('results: PASSED: {} / FAILED: {}'.format(len(results['PASSED']), len(results['FAILED'])), foreground_color='light green')
+        exit(0)
+# j2-temp #

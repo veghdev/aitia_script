@@ -1,0 +1,12 @@
+# j2-temp #
+{%- if out_cdrs | length > 1 %}
+out_cdrs = [
+{%- for item in out_cdrs %}
+    {{ item }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+out_cdr = {{ out_cdrs[0] }}
+{%- endif %}
+# j2-temp #

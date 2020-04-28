@@ -1,0 +1,16 @@
+# j2-temp #
+{%- macro resolve_item(item) -%}
+{'path': '{{ item.path }}', 'suffix':{%- if item.suffix | length > 1 %} {{ item.suffix }}{%- else %} '{{ item.suffix[0] }}'{%- endif %}, 'params': '{{ item.params }}'{%- if flags.in.uri__different__searching -%}, 'searching': {{ item.searching }}{%- endif -%}{%- if flags.in.uri__different__optional -%}, 'optional': {{ item.optional }}{%- endif -%}}
+{%- endmacro %}
+# j2-temp #
+{%- if in_uris | length > 1 %}
+in_uris = [
+{%- for item in in_uris %}
+    {{ resolve_item(item) }}
+    {{- "," if not loop.last }}
+{%- endfor %}
+]
+{%- else %}
+in_uri = {{ resolve_item(in_uris[0]) }}
+{%- endif %}
+# j2-temp #
