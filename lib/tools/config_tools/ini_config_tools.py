@@ -92,16 +92,36 @@ class Ini:
         finally:
             fh.close()
 
-    def modify_parameter(self, section, parameter, value):
+    def set_up_parameter(self, section, parameter, value):
         try:
             index = self._get_index(section, parameter)
             ans = {
                 'section': section,
                 'parameter': parameter,
-                'prev_value': self._content[index['section_index']]['parameters'][index['parameter_index']]['value'],
+                'prev_value': '',
                 'value': value
             }
-            self._content[index['section_index']]['parameters'][index['parameter_index']]['value'] = value
+            if index['section_index'] is not None and index['parameter_index'] is not None:
+                ans['prev_value'] = self._content[index['section_index']]['parameters'][index['parameter_index']]['value']
+                self._content[index['section_index']]['parameters'][index['parameter_index']]['value'] = value
+            elif index['section_index'] is not None and index['parameter_index'] is None:
+                self._content[index['section_index']]['parameters'].append({
+                    'name': parameter,
+                    'value': value,
+                    'commented': False
+                })
+            elif index['section_index'] is None and index['parameter_index'] is None:
+                parameters = list()
+                parameters.append({
+                    'name': parameter,
+                    'value': value,
+                    'commented': False
+                })
+                self._content.append({
+                    'name': section,
+                    'parameters': parameters,
+                    'commented': False
+                })
             return ans
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
@@ -193,12 +213,13 @@ class Ini:
                     if self._content[i]['name'] == section:
                         s_i = i
                         break
-            if parameter is not None:
-                for i in range(len(self._content[s_i]['parameters'])):
-                    if not self._content[s_i]['parameters'][i]['commented']:
-                        if self._content[s_i]['parameters'][i]['name'] == parameter:
-                            p_i = i
-                            break
+            if s_i is not None:
+                if parameter is not None:
+                    for i in range(len(self._content[s_i]['parameters'])):
+                        if not self._content[s_i]['parameters'][i]['commented']:
+                            if self._content[s_i]['parameters'][i]['name'] == parameter:
+                                p_i = i
+                                break
             return {'section_index': s_i, 'parameter_index': p_i}
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
