@@ -1,6 +1,7 @@
 import pathlib
 
 from inspect import currentframe
+import time
 
 from cterm import CtermInterface
 from tools.checking_tools.class_checking_tools import is_class_attributes_defined
@@ -75,6 +76,17 @@ class Control:
             is_class_attributes_defined(self, '_cterm_interface', '_ip', '_port', '_app')
             ans = self._cterm_interface.command('pcreate', f'{self._app}', '-t', self._port)
             self._pid = ans['value']
+            timeout = time.time() + 60
+            while True:
+                try:
+                    self._cterm_interface.command('send', f'{self._ip}:{self._port}', 'app.name')
+                except Exception as e:
+                    if time.time() > timeout:
+                        raise Exception('{}.{}() {}: {}'.format(
+                            self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+                else:
+                    break
+            return self._pid
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
@@ -83,11 +95,26 @@ class Control:
         try:
             is_class_attributes_defined(self, '_cterm_interface', '_ip', '_port')
             self._cterm_interface.command('send', f'{self._ip}:{self._port}', 'app.abort')
-            while True:
-                ans = self._cterm_interface.command('ptestpid', self._pid)
-                if ans['value'] == '0':
-                    break
+            try:
+                timeout = time.time() + 3
+                while True:
+                    ans = self._cterm_interface.command('ptestpid', self._pid)
+                    if ans['value'] == '0':
+                        break
+                    if time.time() > timeout:
+                        self._cterm_interface.command('pdelpid', self._pid)
+                        raise Exception('app({}) is still runnig'.format(self._pid))
+            except Exception as e:
+                timeout = time.time() + 2
+                while True:
+                    ans = self._cterm_interface.command('pdelpid', self._pid)
+                    if ans['value'] == '0':
+                        break
+                    if time.time() > timeout:
+                        raise Exception(e)
+            pid = str(self._pid)
             self._pid = None
+            return pid
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
