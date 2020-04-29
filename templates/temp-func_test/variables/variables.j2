@@ -7,6 +7,8 @@
 
 {%- if flags.out.cdr__exists %}{{"\n\n"}}{% include 'variables/variables.viewer.j2' %}{%- endif %}
 
+{%- if flags.app_test__processing.preprocessing %}{{"\n\n"}}{% include 'variables/variables.preprocessing.j2' %}{%- endif %}
+
 {%- if flags.in.exists %}{{"\n\n"}}{% include 'variables/variables.in.j2' %}{%- endif %}
 
 {%- if flags.out.exists %}{{"\n\n"}}{% include 'variables/variables.out.j2' %}{%- endif %}

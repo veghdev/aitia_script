@@ -38,6 +38,8 @@ def clean_output():
     {%- else %}
     files = list()
 
+    {%- if flags.app_test__processing.preprocessing %}{{"\n"}}{{ collect_file('out_preprocessing', 1) | indent(4, True) }}{%- endif %}
+
     {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_file('out_uri', out_uris | length, flags.out.uri__debug, flags.out.uri__different__debug, 'yaml') | indent(4, True) }}{%- endif %}
 	
 	{%- if flags.out.har__exists %}{{"\n"}}{{ collect_file('out_har', out_hars | length) | indent(4, True) }}{%- endif %}

@@ -297,6 +297,12 @@ def preprocessing__app_test__app_config__runtime_config__file():
                         "'CDR', 'DataPathPrimary/IndexPath', '_out/.../testFile'")
                 path = path.split('/testFile')[0]
                 runtime_config__files.remove(runtime_config__file)
+                if yaml_config['app_test']['app_config']['runtime_config']['global'] == "None":
+                    yaml_config['app_test']['app_config']['runtime_config']['global'] = list()
+                if "'CDR', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path']))" not in yaml_config['app_test']['app_config']['runtime_config']['global']:
+                    yaml_config['app_test']['app_config']['runtime_config']['global'].append("'CDR', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path']))")
+                if "'CDR', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path']))" not in yaml_config['app_test']['app_config']['runtime_config']['global']:
+                    yaml_config['app_test']['app_config']['runtime_config']['global'].append("'CDR', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path']))")
                 out_cdr = {
                     'path': path
                 }
@@ -374,6 +380,13 @@ def create_dirs():
                 if dir_link_path.exists():
                     dir_link_path.unlink()
 
+    if 'preprocessing' in yaml_config['app_test']['processing']:
+        if 'in_preprocessing' in yaml_config['app_test']['processing']['preprocessing']:
+            if yaml_config['app_test']['processing']['preprocessing']['in_preprocessing'] != "None":
+                test_file_dir = resolve_path(env_dir, eval("{" + yaml_config['app_test']['processing']['preprocessing']['in_preprocessing'] + "}")['path'])
+                if test_file_dir not in in_dirs:
+                    in_dirs.append(test_file_dir)
+
     # out
     for out_case in out_uris + out_cdrs + out_hars + out_s1ap_dumps + out_geo_csvs:
         test_file_dir = resolve_path(env_dir, out_case['path'])
@@ -382,6 +395,13 @@ def create_dirs():
         ref_file_dir = resolve_path(env_dir, '_ref' + out_case['path'])
         if ref_file_dir not in ref_dirs:
             ref_dirs.append(ref_file_dir)
+
+    if 'preprocessing' in yaml_config['app_test']['processing']:
+        if 'out_preprocessing' in yaml_config['app_test']['processing']['preprocessing']:
+            if yaml_config['app_test']['processing']['preprocessing']['out_preprocessing'] != "None":
+                test_file_dir = resolve_path(env_dir, eval("{" + yaml_config['app_test']['processing']['preprocessing']['out_preprocessing'] + "}")['path'])
+                if test_file_dir not in in_dirs:
+                    in_dirs.append(test_file_dir)
 
     for test_file_dir in in_dirs + out_dirs + ref_dirs:
         test_file_dir.mkdir(parents=True, exist_ok=True)

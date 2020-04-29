@@ -51,14 +51,14 @@ def processing():
     {%- if flags.subroutines.deconfigure_output %}
     deconfigure_output()
     {%- endif %}
-    app.state_clear()
-    app.counters_clear()
     {%- if flags.app_test__app_config__runtime_config.file or flags.out.cdr__exists or flags.out.har__exists or flags.out.s1ap_dump__exists %}
     restore_runtime_config(runtime_config)
     {%- elif flags.app_test__app_config__runtime_config.specific_file %}
     if input_file.name in runtime_config__specific_file:
         restore_runtime_config(runtime_config)
     {%- endif %}
+    app.state_clear()
+    app.counters_clear()
     {%- if flags.app_test__app_config__ini_config.file or flags.out.geo_csv__exists %}
     stop_app()
     restore_ini_config(ini_config)

@@ -6,7 +6,7 @@ for path_link in path_links:
     if path_link not in input_paths and path_link.exists():
         input_paths.append(path_link)
 {%- endmacro %}
-{%- macro iterate_files() %}
+{%- macro iterate_files_old() %}
 for input_file in input_path.iterdir():
     if input_file.is_file():
         {%- if in_uris | length > 1 %}
@@ -39,28 +39,79 @@ for input_file in input_path.iterdir():
             continue
         input_files.append(input_file)
 {%- endmacro %}
+{%- macro iterate_files(if_suffix) %}
+for input_file in input_path.iterdir():
+    if input_file.is_file():
+        {{ if_suffix }}:
+            if input_file.name != '_path_links.cfg':
+                logger.debug('   skipped: {} - suffix does not match'.format(os.path.relpath(input_file, program_path.parent)))
+            continue
+        if args.select is not None:
+            matched = False
+            for regex in args.select:
+                if re.match(r'^{}$'.format(regex), input_file.name):
+                    matched = True
+                    break
+            if not matched:
+                logger.debug('   skipped: {} - regular expression ({}) does not match with file name ({})'.format(os.path.relpath(input_file, program_path.parent), args.select, input_file.name))
+                continue
+        if input_file.stat().st_size == 0:
+            logger.debug('   skipped: {} - size is 0'.format(os.path.relpath(input_file, program_path.parent)))
+            continue
+        input_files.append(input_file)
+{%- endmacro %}
 # j2-temp #
 def find_input_files():
     input_files = list()
-    {%- if flags.in.uri__main__searching %}
-    input_paths = list()
-    {%- if in_uris | length > 1 %}
-    input_path = resolve_path(program_path.parent, in_uris[0]['path'] )
-    {{- add_paths() | indent(4, True) }}
+
+    {%- if flags.app_test__processing.preprocessing %}
+
+    input_path = resolve_path(program_path.parent, in_preprocessing['path'])
+    {{ iterate_files("if input_file.suffix[1:] != in_preprocessing['suffix']") | indent(4, True) }}
     {%- else %}
-    input_path = resolve_path(program_path.parent, in_uri['path'] )
+
+    {%- if flags.in.uri__main__searching %}
+
+    input_paths = list()
+    input_path = resolve_path(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
     {{- add_paths() | indent(4, True) }}
-    {%- endif %}
 
     for input_path in input_paths:
-        {{- iterate_files() | indent(8, True) }}
+        {%- if in_uris[0].suffix | length > 1 %}
+            {%- if in_uris | length > 1 %}
+            {%- set if_suffix_tmp = "if input_file.suffix[1:] not in in_uris[0]['suffix']" %}
+            {%- else %}
+            {%- set if_suffix_tmp = "if input_file.suffix[1:] not in in_uri['suffix']" %}
+            {%- endif %}
+        {{- iterate_files(if_suffix_tmp) | indent(8, True) }}
+        {%- else %}
+            {%- if in_uris | length > 1 %}
+            {%- set if_suffix_tmp = "if input_file.suffix[1:] != in_uris[0]['suffix']" %}
+            {%- else %}
+            {%- set if_suffix_tmp = "if input_file.suffix[1:] != in_uri['suffix']" %}
+            {%- endif %}
+        {{- iterate_files(if_suffix_tmp) | indent(8, True) }}
+        {%- endif %}
     {%- else %}
-    {%- if in_uris | length > 1 %}
-    input_path = resolve_path(program_path.parent, in_uris[0]['path'])
+
+    input_path = resolve_path(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
+
+    {%- if in_uris[0].suffix | length > 1 %}
+        {%- if in_uris | length > 1 %}
+        {%- set if_suffix_tmp = "if input_file.suffix[1:] not in in_uris[0]['suffix']" %}
+        {%- else %}
+        {%- set if_suffix_tmp = "if input_file.suffix[1:] not in in_uri['suffix']" %}
+        {%- endif %}
+    {{ iterate_files(if_suffix_tmp) | indent(4, True) }}
     {%- else %}
-    input_path = resolve_path(program_path.parent, in_uri['path'])
+        {%- if in_uris | length > 1 %}
+        {%- set if_suffix_tmp = "if input_file.suffix[1:] != in_uris[0]['suffix']" %}
+        {%- else %}
+        {%- set if_suffix_tmp = "if input_file.suffix[1:] != in_uri['suffix']" %}
+        {%- endif %}
+    {{ iterate_files(if_suffix_tmp) | indent(4, True) }}
     {%- endif %}
-    {{ iterate_files() | indent(4, True) }}
+    {%- endif %}
     {%- endif %}
 
     return input_files
