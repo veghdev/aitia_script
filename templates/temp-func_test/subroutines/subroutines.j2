@@ -34,6 +34,12 @@
 {%- if flags.subroutines.restore_runtime_config %}{{"\n\n\n"}}{% include 'subroutines/subroutines.restore_runtime_config.j2' %}{%- endif %}
 
 
+{%- if flags.subroutines.send_pre_commands %}{{"\n\n\n"}}{% include 'subroutines/subroutines.send_pre_commands.j2' %}{%- endif %}
+
+
+{%- if flags.subroutines.send_post_commands %}{{"\n\n\n"}}{% include 'subroutines/subroutines.send_post_commands.j2' %}{%- endif %}
+
+
 {%- if flags.app_test__processing.preprocessing %}{{"\n\n\n"}}{% include 'subroutines/subroutines.preprocessing.j2' %}{%- endif %}
 
 

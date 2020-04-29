@@ -4,6 +4,7 @@ logger.info('   {:16s} = {}'.format('program', program_path))
 logger.info('   {:16s} = {}'.format('program_version', program_version))
 logger.info('   {:16s} = {}'.format('program_lib_path', program_lib_path))
 logger.info('   {:16s} = {}'.format('bin_path', bin_path))
+{%- if flags.out.cdr__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('bin_viewer_path', bin_viewer_path)){%- endif%}
 logger.info('   {:16s} = {}'.format('app_name', app_name))
 logger.info('   {:16s} = {}'.format('app_port', app_port))
 logger.info('   {:16s} = {}'.format('app_path', app_path))
@@ -13,7 +14,6 @@ logger.info('   {:16s} = {}'.format('report_path', report_path))
 logger.info('   {:16s} = {}'.format('report_level', report_level))
 {%- if flags.app__platforms.utilities__cterm %}{{"\n"}}logger.info('   {:16s} = {}'.format('cterm_path', cterm_path)){%- endif%}
 {%- if flags.app__platforms.utilities__adg %}{{"\n"}}logger.info('   {:16s} = {}'.format('adg_path', adg_path)){%- endif%}
-{%- if flags.out.cdr__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('viewer_path', viewer_path)){%- endif%}
 {%- if flags.app_test__processing.test_files_to_skip %}{{"\n"}}logger.info('   {} =\n - {}'.format('test_files_to_skip', '\n - '.join(test_files_to_skip)), foreground_color='light cyan'){%- endif%}
 {%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('ini_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in ini_config__specific_file.items())), foreground_color='light cyan'){%- endif%}
 {%- if flags.app_test__app_config__runtime_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('runtime_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in runtime_config__specific_file.items())), foreground_color='light cyan'){%- endif%}

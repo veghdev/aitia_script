@@ -95,50 +95,50 @@
 
 
 {% set app_test__app_config__ini_config = {} %}
-{% if config.app_test.app_config.ini_config.global is defined and config.app_test.app_config.ini_config.global != 'None' %}
+{% if config.app_test.app_config.ini_config.global is defined and config.app_test.app_config.ini_config.global != 'None' and config.app_test.app_config.ini_config.global | length > 0 %}
     {% do app_test__app_config__ini_config.update({'global': True}) %}
 {% endif %}
-{% if config.app_test.app_config.ini_config.file is defined and config.app_test.app_config.ini_config.file != 'None' %}
+{% if config.app_test.app_config.ini_config.file is defined and config.app_test.app_config.ini_config.file != 'None' and config.app_test.app_config.ini_config.file | length > 0 %}
     {% do app_test__app_config__ini_config.update({'file': True}) %}
 {% endif %}
-{% if config.app_test.app_config.ini_config.specific_file is defined and config.app_test.app_config.ini_config.specific_file != 'None' %}
+{% if config.app_test.app_config.ini_config.specific_file is defined and config.app_test.app_config.ini_config.specific_file != 'None' and config.app_test.app_config.ini_config.specific_file | length > 0 %}
     {% do app_test__app_config__ini_config.update({'specific_file': True}) %}
 {% endif %}
 
 
 {% set app_test__app_config__runtime_config = {} %}
-{% if config.app_test.app_config.runtime_config.global is defined and config.app_test.app_config.runtime_config.global != 'None' %}
+{% if config.app_test.app_config.runtime_config.global is defined and config.app_test.app_config.runtime_config.global != 'None' and config.app_test.app_config.runtime_config.global | length > 0 %}
     {% do app_test__app_config__runtime_config.update({'global': True}) %}
 {% endif %}
-{% if config.app_test.app_config.runtime_config.file is defined and config.app_test.app_config.runtime_config.file != 'None' %}
+{% if config.app_test.app_config.runtime_config.file is defined and config.app_test.app_config.runtime_config.file != 'None' and config.app_test.app_config.runtime_config.file | length > 0 %}
     {% do app_test__app_config__runtime_config.update({'file': True}) %}
 {% endif %}
-{% if config.app_test.app_config.runtime_config.specific_file is defined and config.app_test.app_config.runtime_config.specific_file != 'None' %}
+{% if config.app_test.app_config.runtime_config.specific_file is defined and config.app_test.app_config.runtime_config.specific_file != 'None' and config.app_test.app_config.runtime_config.specific_file | length > 0 %}
     {% do app_test__app_config__runtime_config.update({'specific_file': True}) %}
 {% endif %}
 
 
 {% set app_test__app_config__pre_commands = {} %}
-{% do app_test__app_config__pre_commands.update({'exists': False}) %}
-{% if config.app_test.app_config.pre_commands.global is defined and config.app_test.app_config.pre_commands.global != 'None' %}
+{% if config.app_test.app_config.pre_commands.global is defined and config.app_test.app_config.pre_commands.global != 'None' and config.app_test.app_config.pre_commands.global | length > 0 %}
     {% do app_test__app_config__pre_commands.update({'global': True}) %}
-    {% do app_test__app_config__pre_commands.update({'exists': True}) %}
 {% endif %}
-{% if config.app_test.app_config.pre_commands.file is defined and config.app_test.app_config.pre_commands.file != 'None' %}
+{% if config.app_test.app_config.pre_commands.file is defined and config.app_test.app_config.pre_commands.file != 'None' and config.app_test.app_config.pre_commands.file | length > 0 %}
     {% do app_test__app_config__pre_commands.update({'file': True}) %}
-    {% do app_test__app_config__pre_commands.update({'exists': True}) %}
+{% endif %}
+{% if config.app_test.app_config.pre_commands.specific_file is defined and config.app_test.app_config.pre_commands.specific_file != 'None' and config.app_test.app_config.pre_commands.specific_file | length > 0 %}
+    {% do app_test__app_config__pre_commands.update({'specific_file': True}) %}
 {% endif %}
 
 
 {% set app_test__app_config__post_commands = {} %}
-{% do app_test__app_config__post_commands.update({'exists': False}) %}
-{% if config.app_test.app_config.post_commands.global is defined and config.app_test.app_config.post_commands.global != 'None' %}
+{% if config.app_test.app_config.post_commands.global is defined and config.app_test.app_config.post_commands.global != 'None' and config.app_test.app_config.post_commands.global | length > 0 %}
     {% do app_test__app_config__post_commands.update({'global': True}) %}
-    {% do app_test__app_config__post_commands.update({'exists': True}) %}
 {% endif %}
-{% if config.app_test.app_config.post_commands.file is defined and config.app_test.app_config.post_commands.file != 'None' %}
+{% if config.app_test.app_config.post_commands.file is defined and config.app_test.app_config.post_commands.file != 'None' and config.app_test.app_config.post_commands.file | length > 0 %}
     {% do app_test__app_config__post_commands.update({'file': True}) %}
-    {% do app_test__app_config__post_commands.update({'exists': True}) %}
+{% endif %}
+{% if config.app_test.app_config.post_commands.specific_file is defined and config.app_test.app_config.post_commands.specific_file != 'None' and config.app_test.app_config.post_commands.specific_file | length > 0 %}
+    {% do app_test__app_config__post_commands.update({'specific_file': True}) %}
 {% endif %}
 
 
@@ -189,4 +189,12 @@
 {% if app_test__app_config__ini_config.file or app_test__app_config__ini_config.specific_file or out.geo_csv__exists %}
 {% do subroutines.update({'set_up_ini_config': True}) %}
 {% do subroutines.update({'restore_ini_config': True}) %}
+{% endif %}
+
+{% if app_test__app_config__pre_commands.file or app_test__app_config__pre_commands.specific_file %}
+{% do subroutines.update({'send_pre_commands': True}) %}
+{% endif %}
+
+{% if app_test__app_config__post_commands.file or app_test__app_config__post_commands.specific_file %}
+{% do subroutines.update({'send_post_commands': True}) %}
 {% endif %}

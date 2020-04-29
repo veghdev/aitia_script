@@ -1,3 +1,4 @@
+# j2-temp #
 def initialize_app():
     app_pid = app.start()
     logger.debug('   started app: {}, version: {}, build: {}, pid: {}'.format(app.send_command('app.name')['value'],
@@ -20,3 +21,4 @@ def initialize_app():
     app.send_command({{ item }})
     {%- endfor %}
     {%- endif %}
+# j2-temp #

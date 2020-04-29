@@ -17,10 +17,10 @@ def parse_args():
                         nargs='+',
                         default='All')
 
-    {%- if flags.out.cdr__exists %}
+    {%- if flags.out.cdr__exists or flags.out.uri__debug %}
 
-    parser.add_argument('--debug_cdr',
-                        help='always create debug files of cdrs',
+    parser.add_argument('--debug_out',
+                        help='always create debug files of outputs',
                         action="store_true",
                         default=False)
     {%- endif %}

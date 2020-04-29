@@ -1,5 +1,19 @@
+# j2-temp #
 def send_pre_commands():
-    # send file pre commands
+    {%- if flags.app_test__app_config__pre_commands.file %}
+    # send pre commands (file)
     {%- for item in config.app_test.app_config.pre_commands.file %}
     app.send_command({{ item }})
     {%- endfor %}
+    {%- endif %}
+    {%- if flags.app_test__app_config__pre_commands.specific_file %}
+    {%- if flags.app_test__app_config__pre_commands.file %}{{"\n"}}
+    # send pre commands (specific_file)
+    if input_file.name in pre_commands__specific_file:
+        app.send_command(*pre_commands__specific_file[input_file.name])
+    {%- else %}
+    # send pre commands (specific_file)
+    app.send_command(*pre_commands__specific_file[input_file.name])
+    {%- endif %}
+    {%- endif %}
+# j2-temp #

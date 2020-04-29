@@ -18,4 +18,8 @@
 {%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n\n"}}{% include 'variables/variables.ini_config__specific_file.j2' %}{%- endif %}
 
 {%- if flags.app_test__app_config__runtime_config.specific_file %}{{"\n\n"}}{% include 'variables/variables.runtime_config__specific_file.j2' %}{%- endif %}
+
+{%- if flags.app_test__app_config__pre_commands.specific_file %}{{"\n\n"}}{% include 'variables/variables.pre_commands__specific_file.j2' %}{%- endif %}
+
+{%- if flags.app_test__app_config__post_commands.specific_file %}{{"\n\n"}}{% include 'variables/variables.post_commands__specific_file.j2' %}{%- endif %}
 # j2-temp #

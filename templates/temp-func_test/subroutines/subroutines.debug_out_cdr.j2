@@ -2,13 +2,13 @@
 def debug_out_cdr(src, dst):
     import subprocess
     command = [
-        str(resolve_path(viewer_path, 'SgaCDRViewer-offline.exe')),
+        str(resolve_path(bin_viewer_path, 'SgaCDRViewer-offline.exe')),
         '-l', str(resolve_path(report_path, 'SgaCDRViewer-offline.log')),
         '-u', 'sga', '-p', 'sga', '-r', 'testing',
         '-vr', 'normal', '-cr', '0', '-ct', 'ALL',
         '-o', 'txt',
         '-v', '1', '-d', '1',
-        '-f', str(resolve_path(viewer_path, 'cdrviewerOffline.CdrFilt')),
+        '-f', str(resolve_path(bin_viewer_path, 'cdrviewerOffline.CdrFilt')),
         '-out', str(dst),
         '-of', str(src)
     ]

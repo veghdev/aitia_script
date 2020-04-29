@@ -431,6 +431,9 @@ preprocessing__app_test__processing__out_uri()
 preprocessing__app_test__app_config__ini_config__file()
 preprocessing__app_test__app_config__runtime_config__file()
 
+if len(out_cdrs) > 0:
+    assert 'viewer_dir' in yaml_config['app'], 'app.viewer_dir does not exists'
+
 # check environment
 
 env_dir = resolve_path(test_dir, yaml_config['env']['dir'])

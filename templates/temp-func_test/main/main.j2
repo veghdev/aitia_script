@@ -21,5 +21,10 @@ except Exception as e:
     tb = traceback.format_exc()
     logger.critical('UNEXPECTED ERROR: {}\n{}'.format(e, tb))
     # traceback.print_exc()
-    exit(1)
+    try:
+        if 'app' in globals():
+            if app.is_running():
+                stop_app()
+    finally:
+        exit(1)
 # j2-temp #

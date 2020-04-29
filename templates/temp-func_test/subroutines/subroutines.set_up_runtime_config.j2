@@ -42,7 +42,7 @@ def set_up_runtime_config():
     {%- if flags.app_test__app_config__runtime_config.specific_file %}
 
     # set runtime config (specific_file)
-    {%- if flags.file_runtime_config %}
+    {%- if flags.app_test__app_config__runtime_config.file %}
     if input_file.name in runtime_config__specific_file:
         append_ans(app.set_config(*runtime_config__specific_file[input_file.name]))
     {%- else %}

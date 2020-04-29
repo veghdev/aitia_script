@@ -1,3 +1,4 @@
+# j2-temp #
 def stop_app():
     {%- if flags.app_test__app_config__post_commands.global %}
     # send post command (global)
@@ -10,3 +11,4 @@ def stop_app():
     app_pid = app.stop()
     {%- endif %}
     logger.debug('   stopped pid: {}'.format(app_pid))
+# j2-temp #

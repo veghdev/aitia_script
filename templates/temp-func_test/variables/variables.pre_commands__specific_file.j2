@@ -1,0 +1,8 @@
+# j2-temp #
+pre_commands__specific_file = {
+{%- for item in config.app_test.app_config.pre_commands.specific_file %}
+    '{{ item }}': [{{ config.app_test.app_config.pre_commands.specific_file[item] }}]
+    {{- "," if not loop.last }}
+{%- endfor %}
+}
+# j2-temp #

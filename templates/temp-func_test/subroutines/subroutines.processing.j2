@@ -18,6 +18,12 @@ def processing():
     if not app.is_running():
         initialize_app()
     {%- endif %}
+    {%- if flags.app_test__app_config__pre_commands.file %}
+    send_pre_commands()
+    {%- elif flags.app_test__app_config__pre_commands.specific_file %}
+    if input_file.name in pre_commands__specific_file:
+        send_pre_commands()
+    {%- endif %}
     {%- if flags.app_test__app_config__runtime_config.file or flags.out.cdr__exists or flags.out.har__exists or flags.out.s1ap_dump__exists %}
     runtime_config = set_up_runtime_config()
     {%- elif flags.app_test__app_config__runtime_config.specific_file %}
@@ -33,6 +39,12 @@ def processing():
     app.start_proc()
     app.stop_proc_sync()
     app.state_flush()
+    {%- if flags.app_test__app_config__post_commands.file %}
+    send_post_commands()
+    {%- elif flags.app_test__app_config__post_commands.specific_file %}
+    if input_file.name in post_commands__specific_file:
+        send_post_commands()
+    {%- endif %}
     {%- if flags.subroutines.deconfigure_input %}
     deconfigure_input()
     {%- endif %}
