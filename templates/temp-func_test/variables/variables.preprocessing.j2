@@ -1,4 +1,4 @@
 # j2-temp #
-in_preprocessing = {%- raw %} {{%- endraw %}{{ config.app_test.processing.preprocessing.in_preprocessing.strip() }}{%- raw %}}{%- endraw %}
-out_preprocessing = {%- raw %} {{%- endraw %}{{ config.app_test.processing.preprocessing.out_preprocessing.strip() }}{%- raw %}}{%- endraw %}
+in_preprocessing = {{ config.app_test.processing.preprocessing.in_preprocessing.strip() }}
+out_preprocessing = {{ config.app_test.processing.preprocessing.out_preprocessing.strip() }}
 # j2-temp #

@@ -1,0 +1,72 @@
+env:
+    name: ""
+    dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
+    lib: "../../../../lib"
+app:
+    name: "s1apassembler"
+    dir: "../../../../../bin"
+    git_group: "LTE"
+    git_name: "S1APAssembler"
+    ini:
+        dir: "ini"
+    platforms:
+        -
+            platform: "Windows"
+            executable: "{{ app.name }}_cli.exe"
+            necessary_components:
+                - "{{ app.name }}.dll"
+            additional_components*:
+                - "{{ app.name }}.exe"
+                - "{{ app.name }}.exe.pdb"
+                - "{{ app.name }}.pdb"
+                - "{{ app.name }}.vc.pdb"
+                - "{{ app.name }}_cli.pdb"
+                - "platforms/qwindows.dll"
+                - "Qt5Core.dll"
+                - "Qt5Gui.dll"
+                - "Qt5Network.dll"
+                - "Qt5Script.dll"
+                - "Qt5Widgets.dll"
+            utilities:
+                cterm: "cterm.exe"
+                adg: "adg.exe"
+app_test:
+        version: "0.0.1"
+        app_config:
+            ini_config:
+                global:
+                    - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'S1APAssembler', 'AttachPagingTimeout', '10'"
+                    - "'S1APAssembler', 'CloseTimeout', '5'"
+                    - "'S1APAssembler', 'ConnectionTimeout', '1440'"
+                    - "'S1APAssembler', 'PagingInterval', '300'"
+                    - "'MMEAddresses', 'MME0_IP0', '10.92.15.199'"
+                    - "'MMEAddresses', 'MME0_IP1', '10.92.15.200'"
+                    - "'MMEAddresses', 'MME0_IP2', '10.242.136.248'"
+                    - "'MMEAddresses', 'MME0_IP3', '10.242.137.248'"
+                    - "'MMEAddresses', 'MME0_IP4', '10.242.136.236'"
+                    - "'MMEAddresses', 'MME_IOT_IP0', '10.242.136.235'"
+                file:
+                specific_file:
+            runtime_config:
+                global:
+                file:
+                    - "'S1APAssembler', 'DumpFile', '_out/testFile'"
+                specific_file:
+            pre_commands:
+                global:
+                file:
+                specific_file:
+            post_commands:
+                global:
+                file:
+                specific_file:
+        processing:
+            test_files_to_skip:
+            in_uri:
+                - "file-adg|sga://_in/testFile?name=uriDir_uriIndex&searching=../../../../INet/INetReassembler/func_test/s1ap/_ref_out"
+            out_uri:
+                - "file-adg://_out/testFile?name=uriDir_uriIndex&validate=False"
+            missing_test_files:
+            preprocessing:
+            postprocessing:

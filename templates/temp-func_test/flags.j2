@@ -89,7 +89,7 @@
 {% if config.app_test.processing.preprocessing.code is defined and config.app_test.processing.preprocessing.code != 'None' and config.app_test.processing.preprocessing.in_preprocessing is defined and config.app_test.processing.preprocessing.in_preprocessing != 'None' and config.app_test.processing.preprocessing.out_preprocessing is defined and config.app_test.processing.preprocessing.out_preprocessing != 'None' %}
     {% do app_test__processing.update({'preprocessing': True}) %}
 {% endif %}
-{% if config.app_test.processing.postprocessing.code is defined and config.app_test.processing.postprocessing.code != 'None' %}
+{% if config.app_test.processing.postprocessing.code is defined and config.app_test.processing.postprocessing.code != 'None' and config.app_test.processing.postprocessing.in_postprocessing is defined and config.app_test.processing.postprocessing.in_postprocessing != 'None' and config.app_test.processing.postprocessing.out_postprocessing is defined and config.app_test.processing.postprocessing.out_postprocessing != 'None' %}
     {% do app_test__processing.update({'postprocessing': True}) %}
 {% endif %}
 
@@ -169,7 +169,7 @@
 {% endif %}
 
 {% if out.uri__debug %}
-{% do subroutines.update({'debug_out_uri': True}) %}
+{% do subroutines.update({'debug_out': True}) %}
 {% endif %}
 
 {% if out.cdr__exists %}

@@ -13,6 +13,8 @@
 
 {%- if flags.out.exists %}{{"\n\n"}}{% include 'variables/variables.out.j2' %}{%- endif %}
 
+{%- if flags.app_test__processing.postprocessing %}{{"\n\n"}}{% include 'variables/variables.postprocessing.j2' %}{%- endif %}
+
 {%- if flags.app_test__processing.test_files_to_skip %}{{"\n\n"}}{% include 'variables/variables.test_files_to_skip.j2' %}{%- endif %}
 
 {%- if flags.app_test__processing.missing_test_files %}{{"\n\n"}}{% include 'variables/variables.missing_test_files.j2' %}{%- endif %}

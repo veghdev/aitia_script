@@ -1,0 +1,63 @@
+env:
+    name: "sip"
+    dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
+    lib: "../../../../lib"
+app:
+    name: "inetreassembler"
+    dir: "../../../../../bin"
+    git_group: "INet"
+    git_name: "INetReassembler"
+    ini:
+        dir: "ini"
+    platforms:
+        -
+            platform: "Windows"
+            executable: "{{ app.name }}_cli.exe"
+            necessary_components:
+                - "{{ app.name }}.dll"
+            additional_components*:
+                - "{{ app.name }}.exe"
+                - "{{ app.name }}.exe.pdb"
+                - "{{ app.name }}.pdb"
+                - "{{ app.name }}.vc.pdb"
+                - "{{ app.name }}_cli.pdb"
+                - "platforms/qwindows.dll"
+                - "Qt5Core.dll"
+                - "Qt5Gui.dll"
+                - "Qt5Network.dll"
+                - "Qt5Script.dll"
+                - "Qt5Widgets.dll"
+            utilities:
+                cterm: "cterm.exe"
+                adg: "adg.exe"
+app_test:
+        version: "0.0.1"
+        app_config:
+            ini_config:
+                global:
+                    - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'Output', 'SortingQueueDelay', '3000'"
+                    - "'Output', 'SortingQueueLength', '3000'"
+                file:
+                specific_file:
+            runtime_config:
+                global:
+                file:
+                specific_file:
+            pre_commands:
+                global:
+                file:
+                specific_file:
+            post_commands:
+                global:
+                file:
+                specific_file:
+        processing:
+            test_files_to_skip:
+            in_uri:
+                - "file-sga://_in/testFile?name=uriDir_uriIndex"
+            out_uri:
+                - "file-adg://_out/testFile?name=uriDir_uriIndex"
+            missing_test_files:
+            preprocessing:
+            postprocessing:

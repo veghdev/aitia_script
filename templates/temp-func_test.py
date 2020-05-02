@@ -38,9 +38,9 @@ def parse_args():
                         choices=['VERBOSE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         default='INFO')
     parser.add_argument('--recreate_default_ini',
-                       help='recreate default ini',
-                       action="store_true",
-                       default=False)
+                        help='recreate default ini',
+                        action="store_true",
+                        default=False)
     parser.add_argument('--recreate_test_file',
                         help='recreate test file',
                         action="store_false",
@@ -205,7 +205,7 @@ def preprocessing__app_test__processing__out_uri():
     if tmp_out_uris != 'None':
         for out_uri in tmp_out_uris[:]:
             if out_uri.startswith('file-'):
-                tmp = out_uri.split('-')[1]
+                tmp = out_uri.split('-', 1)[1]
 
                 tmp = tmp.split('://')
                 suffix = tmp[0]
@@ -288,27 +288,29 @@ def preprocessing__app_test__app_config__runtime_config__file():
         for runtime_config__file in runtime_config__files[:]:
 
             # cdr
-            if runtime_config__file.startswith("'CDR', 'DataPathPrimary'") or runtime_config__file.startswith("'CDR', 'IndexPath'"):
-                path = runtime_config__file.split(', ')[2]
+            if runtime_config__file.startswith("'CDR', 'DataPathPrimary'") \
+                    or runtime_config__file.startswith("'CDR', 'IndexPath'") \
+                    or runtime_config__file.startswith("'S1APCDRWriter', 'DataPathPrimary'") \
+                    or runtime_config__file.startswith("'S1APCDRWriter', 'IndexPath'") \
+                    or runtime_config__file.startswith("'SIPCDRWriter', 'DataPathPrimary'") \
+                    or runtime_config__file.startswith("'SIPCDRWriter', 'IndexPath'"):
+                sec, par, path = runtime_config__file.split(', ')
+                sec = sec.strip("'")
+                par = par.strip("'")
                 path = path.strip("'")
                 assert path.startswith('_out') and path.endswith('testFile'), \
                     'app_test.app_config.runtime_config.file got: {}, expected: {}'.format(
                         runtime_config__file,
-                        "'CDR', 'DataPathPrimary/IndexPath', '_out/.../testFile'")
+                        "'CDR/S1APCDRWriter/SIPCDRWriter', 'DataPathPrimary/IndexPath', '_out/.../testFile'")
                 path = path.split('/testFile')[0]
                 runtime_config__files.remove(runtime_config__file)
-                if yaml_config['app_test']['app_config']['runtime_config']['global'] == "None":
-                    yaml_config['app_test']['app_config']['runtime_config']['global'] = list()
-                if "'CDR', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path']))" not in yaml_config['app_test']['app_config']['runtime_config']['global']:
-                    yaml_config['app_test']['app_config']['runtime_config']['global'].append("'CDR', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path']))")
-                if "'CDR', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path']))" not in yaml_config['app_test']['app_config']['runtime_config']['global']:
-                    yaml_config['app_test']['app_config']['runtime_config']['global'].append("'CDR', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path']))")
                 out_cdr = {
-                    'path': path
+                    'path': path,
+                    'type': sec
                 }
                 if out_cdr not in out_cdrs:
                     assert len(out_cdrs) == 0, \
-                        'app_test.app_config.runtime_config.file CDR/DataPathPrimary-CDR/IndexPath does not equal'
+                        'app_test.app_config.runtime_config.file CDR/S1APCDRWriter/SIPCDRWriter/DataPathPrimary-CDR/IndexPath does not equal'
                     out_cdrs.append(out_cdr)
 
             # har
@@ -355,7 +357,6 @@ def preprocessing__app_test__app_config__runtime_config__file():
 
 
 def create_dirs():
-
     in_dirs = list()
     out_dirs = list()
     ref_dirs = list()
@@ -383,7 +384,7 @@ def create_dirs():
     if 'preprocessing' in yaml_config['app_test']['processing']:
         if 'in_preprocessing' in yaml_config['app_test']['processing']['preprocessing']:
             if yaml_config['app_test']['processing']['preprocessing']['in_preprocessing'] != "None":
-                test_file_dir = resolve_path(env_dir, eval("{" + yaml_config['app_test']['processing']['preprocessing']['in_preprocessing'] + "}")['path'])
+                test_file_dir = resolve_path(env_dir, eval(yaml_config['app_test']['processing']['preprocessing']['in_preprocessing'])['path'])
                 if test_file_dir not in in_dirs:
                     in_dirs.append(test_file_dir)
 
@@ -396,12 +397,16 @@ def create_dirs():
         if ref_file_dir not in ref_dirs:
             ref_dirs.append(ref_file_dir)
 
-    if 'preprocessing' in yaml_config['app_test']['processing']:
-        if 'out_preprocessing' in yaml_config['app_test']['processing']['preprocessing']:
-            if yaml_config['app_test']['processing']['preprocessing']['out_preprocessing'] != "None":
-                test_file_dir = resolve_path(env_dir, eval("{" + yaml_config['app_test']['processing']['preprocessing']['out_preprocessing'] + "}")['path'])
-                if test_file_dir not in in_dirs:
-                    in_dirs.append(test_file_dir)
+    if 'postprocessing' in yaml_config['app_test']['processing']:
+        if 'out_postprocessing' in yaml_config['app_test']['processing']['postprocessing']:
+            if yaml_config['app_test']['processing']['postprocessing']['out_postprocessing'] != "None":
+                for out_postprocessing in eval(yaml_config['app_test']['processing']['postprocessing']['out_postprocessing']):
+                    test_file_dir = resolve_path(env_dir, out_postprocessing['path'])
+                    if test_file_dir not in in_dirs:
+                        out_dirs.append(test_file_dir)
+                    ref_file_dir = resolve_path(env_dir, '_ref' + out_postprocessing['path'])
+                    if ref_file_dir not in ref_dirs:
+                        ref_dirs.append(ref_file_dir)
 
     for test_file_dir in in_dirs + out_dirs + ref_dirs:
         test_file_dir.mkdir(parents=True, exist_ok=True)
@@ -418,6 +423,7 @@ logger = Logger(name=program_path.stem, level=args.report_level)
 
 test_dir = resolve_path(program_path.parent, args.test_dir)
 yaml_config_file = args.config
+
 
 class NullUndefined(jinja2.Undefined):
     def __getattr__(self, key):

@@ -1,0 +1,65 @@
+env:
+    name: "sipcall_sipa"
+    dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
+    lib: "../../../../lib"
+app:
+    name: "cdrwriter"
+    dir: "../../../../../bin"
+    viewer_dir: "../../../../../bin_sgacdrviewer"
+    git_group: "DB"
+    git_name: "CdrWriter"
+    ini:
+        dir: "ini"
+    platforms:
+        -
+            platform: "Windows"
+            executable: "{{ app.name }}_cli.exe"
+            necessary_components:
+                - "{{ app.name }}.dll"
+            additional_components*:
+                - "{{ app.name }}.exe"
+                - "{{ app.name }}.exe.pdb"
+                - "{{ app.name }}.pdb"
+                - "{{ app.name }}.vc.pdb"
+                - "{{ app.name }}_cli.pdb"
+                - "platforms/qwindows.dll"
+                - "Qt5Core.dll"
+                - "Qt5Gui.dll"
+                - "Qt5Network.dll"
+                - "Qt5Script.dll"
+                - "Qt5Widgets.dll"
+            utilities:
+                cterm: "cterm.exe"
+                adg: "adg.exe"
+app_test:
+        version: "0.0.1"
+        description: "{{ app.git_name }} {{ env.name }} {{ app_test.name }}"
+        app_config:
+            ini_config:
+                global:
+                    - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'CDR', 'Encrypt', '0'"
+                file:
+                specific_file:
+            runtime_config:
+                global:
+                file:
+                    - "'CDR', 'DataPathPrimary', '_out/testFile'"
+                    - "'CDR', 'IndexPath', '_out/testFile'"
+                specific_file:
+            pre_commands:
+                global:
+                file:
+                specific_file:
+            post_commands:
+                global:
+                file:
+                specific_file:
+        processing:
+            test_files_to_skip:
+            in_uri:
+                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../SIP/SIPCallAssembler/func_test/sip_sipa/_ref_out"
+            out_uri:
+            missing_test_files:
+            preprocessing:
+            postprocessing:

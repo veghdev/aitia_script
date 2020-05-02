@@ -67,7 +67,7 @@
 {%- if flags.subroutines.deconfigure_output %}{{"\n\n\n"}}{% include 'subroutines/subroutines.deconfigure_output.j2' %}{%- endif %}
 
 
-{%- if flags.subroutines.debug_out_uri %}{{"\n\n\n"}}{% include 'subroutines/subroutines.debug_out_uri.j2' %}{%- endif %}
+{%- if flags.subroutines.debug_out %}{{"\n\n\n"}}{% include 'subroutines/subroutines.debug_out.j2' %}{%- endif %}
 
 
 {%- if flags.subroutines.debug_out_cdr %}{{"\n\n\n"}}{% include 'subroutines/subroutines.debug_out_cdr.j2' %}{%- endif %}

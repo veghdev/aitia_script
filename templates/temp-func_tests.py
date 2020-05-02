@@ -17,7 +17,7 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-c', '--config',
-                        help='select config by name',
+                        help='select config directory',
                         nargs='+',
                         required=True)
 

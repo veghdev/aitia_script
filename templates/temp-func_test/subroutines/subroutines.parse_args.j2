@@ -17,6 +17,18 @@ def parse_args():
                         nargs='+',
                         default='All')
 
+    parser.add_argument('-e', '--executable',
+                        help='change executable name',
+                        default='{%- for item in config.app.platforms %}{{ item.executable }}{{- " / " if not loop.last }}{%- endfor %}')
+    parser.add_argument('-b', '--bin',
+                        help='change relative bin path',
+                        default='{{ config.app.dir }}')
+    {%- if flags.out.cdr__exists %}
+    parser.add_argument('-bv', '--bin_viewer',
+                        help='change relative bin viewer path',
+                        default='{{ config.app.viewer_dir }}')
+    {%- endif %}
+
     {%- if flags.out.cdr__exists or flags.out.uri__debug %}
 
     parser.add_argument('--debug_out',
@@ -31,11 +43,11 @@ def parse_args():
                        action="store_true",
                        default=False)
     group.add_argument('--remove',
-                       help='delete all or selected inputs, outputs and referencies and exit',
+                       help='todo - not implemented: delete all or selected inputs, outputs and references and exit',
                        action="store_true",
                        default=False)
     group.add_argument('--replace',
-                       help='replace all or selected referencies with previous outputs and exit',
+                       help='todo - not implemented: replace all or selected references with previous outputs and exit',
                        action="store_true",
                        default=False)
 
@@ -43,6 +55,10 @@ def parse_args():
 
     if args.select == 'All':
         args.select = None
+    {%- if flags.app__platforms.cross_platform %}
+    if args.executable == '{%- for item in config.app.platforms %}{{ item.executable }}{{- " / " if not loop.last }}{%- endfor %}':
+        args.executable = None
+    {%- endif %}
 
     return args
 # j2-temp #

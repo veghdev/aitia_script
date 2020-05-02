@@ -1,15 +1,17 @@
 # j2-temp #
-bin_path = resolve_path(program_path.parent, '{{ config.app.dir }}')
+bin_path = resolve_path(program_path.parent, args.bin)
 app_name = '{{ config.app.name }}'
 app_port = find_free_port()
 {%- if flags.app__platforms.cross_platform %}
+if args.executable != None:
+    app_path = resolve_path(bin_path, args.executable)
 {%- for item in config.app.platforms %}
-if program_platform == '{{ item.platform }}':
+elif program_platform == '{{ item.platform }}':
     app_path = resolve_path(bin_path, '{{ item.executable }}')
 {%- endfor %}
 {%- else %}
 {%- for item in config.app.platforms %}
-app_path = resolve_path(bin_path, '{{ item.executable }}')
+app_path = resolve_path(bin_path, args.executable)
 {%- endfor %}
 {%- endif %}
 app_ini_path = resolve_path(bin_path, app_path.stem + '.ini')

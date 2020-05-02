@@ -1,4 +1,19 @@
 # j2-temp #
+{%- macro validate() %}
+{%- if not flags.out.uri__different__validate %}
+{%- if flags.out.uri__validate %}
+passed = False
+{%- else %}
+logger.warning('   IGNORE - validation is inactive')
+{%- endif %}
+{%- else %}
+if out_uri['validate']:
+    passed = False
+else:
+    logger.warning('   IGNORE - validation is inactive')
+{%- endif %}
+{%- endmacro %}
+# j2-temp #
 def check_output():
     passed = True
 
@@ -66,50 +81,52 @@ def check_output():
             passed = False
     {%- else %}
 
-    {%- if flags.out.uri__exists and flags.out.uri__validate %}
+    {%- if flags.out.uri__exists %}
     {%- if out_uris | length > 1%}
 
     # out_uri
     for out_uri in out_uris:
-        {%- if flags.out.uri__different__validate %}
-        if not out_uri['validate']:
-            continue
-        {%- endif %}
         out = resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
         ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
         if out.exists():
             if not fcmp(out, ref):
-                passed = False
+                {{- validate() | indent(16, True) }}
             {%- if flags.out.uri__debug %}
                 {%- if flags.out.uri__different__debug %}
                 if out_uri['debug']:
-                    debug_out_uri(out, out.with_suffix('.yaml'))
-                    fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+                    if out.stat().st_size != 0:
+                        debug_out(out, out.with_suffix('.yaml'))
+                        if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                            {{- validate() | indent(28, True) }}
                 {%- else %}
-                debug_out_uri(out, out.with_suffix('.yaml'))
-                fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+                if out.stat().st_size != 0:
+                    debug_out(out, out.with_suffix('.yaml'))
+                    if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                        {{- validate() | indent(24, True) }}
                 {%- endif %}
             else:
                 if args.debug_out:
                     {%- if flags.out.uri__different__debug %}
                     if out_uri['debug']:
-                        debug_out_uri(out, out.with_suffix('.yaml'))
-                        if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
-                            passed = False
+                        if out.stat().st_size != 0:
+                            debug_out(out, out.with_suffix('.yaml'))
+                            if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                                {{- validate() | indent(32, True) }}
                     {%- else %}
-                    debug_out_uri(out, out.with_suffix('.yaml'))
-                    if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
-                        passed = False
+                    if out.stat().st_size != 0:
+                        debug_out(out, out.with_suffix('.yaml'))
+                        if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                            {{- validate() | indent(28, True) }}
                     {%- endif %}
             {%- endif %}
         else:
             {%- if not flags.app_test__processing.missing_test_files %}
-            passed = False
             logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
+            {{- validate() | indent(12, True) }}
             {%- else %}
             if os.path.relpath(out, program_path.parent).replace('\\', '/') not in missing_test_files:
-                passed = False
                 logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
+                {{- validate() | indent(16, True) }}
             {%- endif %}
     {%- else %}
 
@@ -118,26 +135,54 @@ def check_output():
     ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
     if out.exists():
         if not fcmp(out, ref):
-            passed = False
+            {{- validate() | indent(12, True) }}
         {%- if flags.out.uri__debug %}
-            debug_out_uri(out, out.with_suffix('.yaml'))
-            fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml'))
+            if out.stat().st_size != 0:
+                debug_out(out, out.with_suffix('.yaml'))
+                if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                    {{- validate() | indent(20, True) }}
         else:
             if args.debug_out:
-                debug_out_uri(out, out.with_suffix('.yaml'))
-                if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
-                    passed = False
+                if out.stat().st_size != 0:
+                    debug_out(out, out.with_suffix('.yaml'))
+                    if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                        {{- validate() | indent(24, True) }}
         {%- endif %}    
     else:
         {%- if not flags.app_test__processing.missing_test_files %}
-        passed = False
         logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
+        {{- validate() | indent(8, True) }}
         {%- else %}
         if os.path.relpath(out, program_path.parent).replace('\\', '/') not in missing_test_files:
-            passed = False
             logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
+            {{- validate() | indent(12, True) }}
         {%- endif %}
     {%- endif %}
+    {%- endif %}
+
+    {%- if flags.app_test__processing.postprocessing %}
+
+    # out_postprocessing
+    for out_postprocessing in out_postprocessings:
+        out = resolve_path(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+        ref = resolve_path(program_path.parent, '_ref' + out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+        if out.exists():
+            if not fcmp(out, ref):
+                passed = False
+                if out.stat().st_size != 0:
+                    debug_out(out, out.with_suffix('.yaml'))
+                    if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                        passed = False
+
+            else:
+                if args.debug_out:
+                    if out.stat().st_size != 0:
+                        debug_out(out, out.with_suffix('.yaml'))
+                        if not fcmp(out.with_suffix('.yaml'), ref.with_suffix('.yaml')):
+                            {{- validate() | indent(28, True) }}
+        else:
+            logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
+            passed = False
     {%- endif %}
 
     {%- if flags.out.har__exists %}

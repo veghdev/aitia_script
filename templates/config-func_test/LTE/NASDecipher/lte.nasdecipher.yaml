@@ -1,0 +1,73 @@
+env:
+    name: ""
+    dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
+    lib: "../../../../lib"
+app:
+    name: "nasdecipher"
+    dir: "../../../../../bin"
+    git_group: "LTE"
+    git_name: "NASDecipher"
+    ini:
+        dir: "ini"
+    platforms:
+        -
+            platform: "Windows"
+            executable: "{{ app.name }}_cli.exe"
+            necessary_components:
+                - "{{ app.name }}.dll"
+            additional_components*:
+                - "{{ app.name }}.exe"
+                - "{{ app.name }}.exe.pdb"
+                - "{{ app.name }}.pdb"
+                - "{{ app.name }}.vc.pdb"
+                - "{{ app.name }}_cli.pdb"
+                - "platforms/qwindows.dll"
+                - "Qt5Core.dll"
+                - "Qt5Gui.dll"
+                - "Qt5Network.dll"
+                - "Qt5Script.dll"
+                - "Qt5Widgets.dll"
+            utilities:
+                cterm: "cterm.exe"
+                adg: "adg.exe"
+app_test:
+        version: "0.0.1"
+        app_config:
+            ini_config:
+                global:
+                    - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'KeyServer', 'Server3G', '1'"
+                    - "'KeyServer', 'Server4G', '1'"
+                    - "'NASDecipher', 'MCC', '216'"
+                    - "'NASDecipher', 'MMEGroupId', '32768'"
+                    - "'NASDecipher', 'MNC', '30'"
+                    - "'NASDecipher', 'OwnMMECode', '22'"
+                    - "'NASDecipher', 'OwnNRIValue', '180'"
+                    - "'NASDecipher', 'OwnNRIValueBitWidth', '5'"
+                    - "'NASDecipher', 'ThreadCount', '1'"
+                file:
+                specific_file:
+            runtime_config:
+                global:
+                file:
+                specific_file:
+            pre_commands:
+                global:
+                file:
+                specific_file:
+            post_commands:
+                global:
+                file:
+                specific_file:
+        processing:
+            test_files_to_skip:
+            in_uri:
+                - "file-adg://_in/s1ap/testFile?name=uriDir_uriIndex&searching=../../../../S1APAssembler/func_test/_ref_out"
+                - "file-adg://_in/diam_key/testFile?name=uriDir_uriIndex&optional=True&searching=../../../../../INet/DiamAssembler/func_test/diam_key/_ref_out"
+                - "file-adg://_in/gtp_key/testFile?name=uriDir_uriIndex&optional=True&searching=../../../../GTPKeyCollector/func_test/_ref_out"
+            out_uri:
+                - "file-sga://_out/sga/testFile?name=uriDir_uriIndex&blocklinkids=Z99&validate=True"
+                - "file-adg://_out/adg/testFile?name=uriDir_uriIndex&validate=False"
+            missing_test_files:
+            preprocessing:
+            postprocessing:

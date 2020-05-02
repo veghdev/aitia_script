@@ -1,0 +1,81 @@
+env:
+    name: "sip_bypass"
+    dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
+    lib: "../../../../lib"
+app:
+    name: "inetreassembler"
+    dir: "../../../../../bin"
+    git_group: "INet"
+    git_name: "INetReassembler"
+    ini:
+        dir: "ini"
+    platforms:
+        -
+            platform: "Windows"
+            executable: "{{ app.name }}_cli.exe"
+            necessary_components:
+                - "{{ app.name }}.dll"
+            additional_components*:
+                - "{{ app.name }}.exe"
+                - "{{ app.name }}.exe.pdb"
+                - "{{ app.name }}.pdb"
+                - "{{ app.name }}.vc.pdb"
+                - "{{ app.name }}_cli.pdb"
+                - "platforms/qwindows.dll"
+                - "Qt5Core.dll"
+                - "Qt5Gui.dll"
+                - "Qt5Network.dll"
+                - "Qt5Script.dll"
+                - "Qt5Widgets.dll"
+            utilities:
+                cterm: "cterm.exe"
+                adg: "adg.exe"
+app_test:
+        version: "0.0.1"
+        app_config:
+            ini_config:
+                global:
+                    - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'INetReassembler', 'BypassInput', '1'"
+                    - "'INetReassembler', 'SendEventsOnDuplicates', '1'"
+                    - "'INetReassembler', 'TrackPayload', '1'"
+                file:
+                specific_file:
+            runtime_config:
+                global:
+                file:
+                specific_file:
+            pre_commands:
+                global:
+                file:
+                specific_file:
+            post_commands:
+                global:
+                file:
+                specific_file:
+        processing:
+            test_files_to_skip:
+            in_uri:
+                - "file-sga://_in/testFile?name=uriDir_uriIndex&storepos=true&searching=../../sip/_in"
+            out_uri:
+                - "file-adg://_out_tmp/testFile?name=uriDir_uriIndex&validate=False"
+            missing_test_files:
+            preprocessing:
+            postprocessing:
+                in_postprocessing: "{'path': '_out_tmp', 'suffix': 'adg'}"
+                out_postprocessing: "[{'path': '_out/sip_msg', 'suffix': 'adg', 'params': ['protocol.pass', 'ip4', 'ip6']}, {'path': '_out/sip_processed', 'suffix': 'adg', 'params': ['protocol.block', 'ip4', 'ip6']}]"
+                code: |
+                    import subprocess
+                    for out_postprocessing in out_postprocessings:
+                        in_f = resolve_path(program_path.parent, in_postprocessing['path'], input_file.stem + '.' + in_postprocessing['suffix'])
+                        out_f = resolve_path(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+                        
+                        if in_f.stat().st_size != 0:
+                            command = [
+                                str(adg_path),
+                                '-i', str(in_f),
+                                '-o', str(out_f),
+                                *out_postprocessing['params']
+                            ]
+                            p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            p.communicate()

@@ -28,6 +28,14 @@ def clean():
     {%- if flags.app_test__processing.preprocessing %}{{"\n"}}{{ collect_path('out_preprocessing', 1) | indent(4, True) }}{%- endif %}
 
     {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_path('out_uri', out_uris | length) | indent(4, True) }}{%- endif %}
+
+    {%- if flags.app_test__processing.postprocessing %}
+
+    # out_postprocessing
+    for out_postprocessing in out_postprocessings:
+        if out_postprocessing['path'] not in paths:
+            paths.append(resolve_path(program_path.parent, out_postprocessing['path']))
+    {%- endif %}
 	
 	{%- if flags.out.har__exists %}{{"\n"}}{{ collect_path('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
 

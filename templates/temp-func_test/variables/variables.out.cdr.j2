@@ -2,11 +2,11 @@
 {%- if out_cdrs | length > 1 %}
 out_cdrs = [
 {%- for item in out_cdrs %}
-    {{ item }}
+    'path': '{{ item.path }}'
     {{- "," if not loop.last }}
 {%- endfor %}
 ]
 {%- else %}
-out_cdr = {{ out_cdrs[0] }}
+out_cdr = {%- raw %} {{%- endraw %}'path': '{{ out_cdrs[0].path }}'{%- raw %}}{%- endraw %}
 {%- endif %}
 # j2-temp #

@@ -3,7 +3,7 @@
 {%- if length > 1 %}
 # {{ item }}
 for {{ item }} in {{ item }}s:
-    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{}'.format({{ item }}['suffix'])))
+    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
     {%- if debug %}
     {%- if different__debug %}
     # {{ item }} debug
@@ -16,7 +16,7 @@ for {{ item }} in {{ item }}s:
     {%- endif %}
 {%- else %}
 # {{ item }}
-files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{}'.format({{ item }}['suffix'])))
+files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
 {%- if debug %}
 {%- if different__debug %}
 # {{ item }} debug
@@ -41,6 +41,8 @@ def clean_output():
     {%- if flags.app_test__processing.preprocessing %}{{"\n"}}{{ collect_file('out_preprocessing', 1) | indent(4, True) }}{%- endif %}
 
     {%- if flags.out.uri__exists %}{{"\n"}}{{ collect_file('out_uri', out_uris | length, flags.out.uri__debug, flags.out.uri__different__debug, 'yaml') | indent(4, True) }}{%- endif %}
+
+    {%- if flags.app_test__processing.postprocessing %}{{"\n"}}{{ collect_file('out_postprocessing', 2, True, False, 'yaml') | indent(4, True) }}{%- endif %}
 	
 	{%- if flags.out.har__exists %}{{"\n"}}{{ collect_file('out_har', out_hars | length) | indent(4, True) }}{%- endif %}
 
