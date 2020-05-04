@@ -9,4 +9,5 @@ import socket
 import contextlib
 import time
 import traceback
+{%- if flags.out.cdr__exists or flags.out.uri__debug %}{{"\n"}}import subprocess{%- endif %}
 # j2-temp #

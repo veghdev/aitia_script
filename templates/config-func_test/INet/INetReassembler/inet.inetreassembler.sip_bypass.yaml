@@ -65,7 +65,6 @@ app_test:
                 in_postprocessing: "{'path': '_out_tmp', 'suffix': 'adg'}"
                 out_postprocessing: "[{'path': '_out/sip_msg', 'suffix': 'adg', 'params': ['protocol.pass', 'ip4', 'ip6']}, {'path': '_out/sip_processed', 'suffix': 'adg', 'params': ['protocol.block', 'ip4', 'ip6']}]"
                 code: |
-                    import subprocess
                     for out_postprocessing in out_postprocessings:
                         in_f = resolve_path(program_path.parent, in_postprocessing['path'], input_file.stem + '.' + in_postprocessing['suffix'])
                         out_f = resolve_path(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])

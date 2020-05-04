@@ -511,11 +511,12 @@ if yaml_config['env']['name'] != "":
     path = resolve_path(test_dir, yaml_config['env']['dir']).parent
     summary_file = resolve_path(path, 'func_test.py')
 
-    summary_file_content = """import subprocess
+    summary_file_content = """import sys
+import subprocess
 \n\ndef processing():
     global exit_code
     for process in processes:
-        ans = subprocess.call(['python',r'{}'.format(process)])
+        ans = subprocess.call(['python',r'{}'.format(process), *sys.argv[1:]])
         if ans != 0:
             if exit_code != 0:
                 if ans < exit_code:
@@ -523,7 +524,7 @@ if yaml_config['env']['name'] != "":
             else:
                 exit_code = ans
     exit(exit_code)
-\n\nexit_code = 0    
+\n\nexit_code = 0
 processes = list()
 {}
 processing()""".format('{}', func_tests)

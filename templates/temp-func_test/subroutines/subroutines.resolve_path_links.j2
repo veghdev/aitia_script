@@ -13,6 +13,8 @@ def resolve_path_links(path):
                 file = open(resolve_path(path, '_path_links.cfg'), 'r')
                 line = file.readline()
                 while line:
+                    if args.link_out:
+                        line = line.replace('_ref', '')
                     path_link = resolve_path(path, line.strip())
                     if path_link not in path_links:
                         path_links.append(path_link)
@@ -23,9 +25,8 @@ def resolve_path_links(path):
                 file.close()
 
         resolved_path_links[path] = path_links
-        return resolved_path_links[path]
-    else:
-        return resolved_path_links[path]
+
+    return resolved_path_links[path]
     {%- else %}
     path_links = list()
 
@@ -34,6 +35,8 @@ def resolve_path_links(path):
             file = open(resolve_path(path, '_path_links.cfg'), 'r')
             line = file.readline()
             while line:
+                if args.link_out:
+                    line = line.replace('_ref', '')
                 path_link = resolve_path(path, line.strip())
                 if path_link not in path_links:
                     path_links.append(path_link)

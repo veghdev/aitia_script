@@ -37,6 +37,14 @@ def parse_args():
                         default=False)
     {%- endif %}
 
+    {%- if flags.in.uri__main__searching or flags.in.uri__additional__searching %}
+
+    parser.add_argument('--link_out',
+                        help='process the found outputs instead of the found references',
+                        action="store_true",
+                        default=False)
+    {%- endif %}
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--clean',
                        help='delete reports and all outputs and exit',
