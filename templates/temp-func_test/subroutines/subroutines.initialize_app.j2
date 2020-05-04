@@ -1,6 +1,6 @@
 # j2-temp #
 def initialize_app():
-    app_pid = app.start()
+    app_pid = app.start(inifile = str(app_ini_path))
     logger.debug('   started app: {}, version: {}, build: {}, pid: {}'.format(app.send_command('app.name')['value'],
                                                                               app.send_command('app.version', 'v')['value'],
                                                                               app.send_command('app.version', 'b')['value'],

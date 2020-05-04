@@ -14,7 +14,7 @@ elif program_platform == '{{ item.platform }}':
 app_path = resolve_path(bin_path, args.executable)
 {%- endfor %}
 {%- endif %}
-app_ini_path = resolve_path(bin_path, app_path.stem + '.ini')
+app_ini_path = resolve_path(program_path.parent, '{{ config.app.ini.dir }}', app_path.stem + '_tmp.ini')
 base_ini_path = resolve_path(program_path.parent, '{{ config.app.ini.dir }}', app_name + '.ini')
 report_path = resolve_path(program_path.parent, 'report', time.strftime("%Y%m%d_%H%M%S", time.localtime()))
 report_level = args.report_level

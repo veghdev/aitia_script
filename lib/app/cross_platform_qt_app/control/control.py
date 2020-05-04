@@ -71,10 +71,13 @@ class Control:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
 
-    def start(self):
+    def start(self, inifile=None):
         try:
             is_class_attributes_defined(self, '_cterm_interface', '_ip', '_port', '_app')
-            ans = self._cterm_interface.command('pcreate', f'{self._app}', '-t', self._port)
+            if inifile is not None:
+                ans = self._cterm_interface.command('pcreate', f'{self._app}', '-t', self._port, '-I', inifile)
+            else:
+                ans = self._cterm_interface.command('pcreate', f'{self._app}', '-t', self._port)
             self._pid = ans['value']
             timeout = time.time() + 60
             while True:
