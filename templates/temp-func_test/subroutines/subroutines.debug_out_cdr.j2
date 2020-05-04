@@ -11,6 +11,20 @@ def debug_out_cdr(src, dst):
         '-out', str(dst),
         '-of', str(src)
     ]
+    {%- if flags.app__platforms.cross_platform %}
+    startupinfo = None
+    if program_platform == 'Windows':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+    {%- else %}
+    {%- if config.app.platforms[0].platform == 'Windows' %}
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+    {%- else %}
     p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    {%- endif %}
+    {%- endif %}
     p.communicate()
 # j2-temp #
