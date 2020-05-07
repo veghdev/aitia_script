@@ -1,10 +1,8 @@
 env:
     name: ""
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "diampreprocessor"
-    dir: "../../../../../bin"
     git_group: "INet"
     git_name: "DiamPreprocessor"
     ini:

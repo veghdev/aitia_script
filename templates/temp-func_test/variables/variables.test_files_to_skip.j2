@@ -3,7 +3,7 @@
 test_files_to_skip = [{{"\n"}}
 {%- for item in config.app_test.processing.test_files_to_skip -%}
     {{- "\t" if loop.first }}'{{ item }}'{{- ", " if not loop.last }}
-    {%- if loop.index % 4 == 0 %}{{ "\n\t" }}{%- endif %}
+    {%- if loop.index % 4 == 0 and not loop.last %}{{ "\n\t" }}{%- endif %}
 {%- endfor -%}
 {{"\n"}}]
 {%- else %}

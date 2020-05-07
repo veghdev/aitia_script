@@ -1,11 +1,8 @@
 env:
     name: "sip_sipa"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "sipcdrwriter"
-    dir: "../../../../../bin"
-    viewer_dir: "../../../../../bin_sgacdrviewer"
     git_group: "SIP"
     git_name: "SIPCDRWriter"
     ini:

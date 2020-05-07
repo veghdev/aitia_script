@@ -1,11 +1,8 @@
 env:
     name: ""
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "s1apcdrwriter"
-    dir: "../../../../../bin"
-    viewer_dir: "../../../../../bin_sgacdrviewer"
     git_group: "LTE"
     git_name: "S1APCDRWriter"
     ini:

@@ -1,10 +1,8 @@
 env:
     name: "sip_bypass"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "sippreprocessor"
-    dir: "../../../../../bin"
     git_group: "SIP"
     git_name: "SIPPreprocessor"
     ini:
@@ -54,7 +52,6 @@ app_test:
                 specific_file:
         processing:
             test_files_to_skip:
-                - "https.adg"
             in_uri:
                 - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/sip_bypass/_ref_out_tmp"
             out_uri:

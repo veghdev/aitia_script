@@ -22,11 +22,11 @@ def parse_args():
                         default='{%- for item in config.app.platforms %}{{ item.executable }}{{- " / " if not loop.last }}{%- endfor %}')
     parser.add_argument('-b', '--bin',
                         help='change relative bin path',
-                        default='{{ config.app.dir }}')
+                        default='{% if config.env.name != "" %}../{% endif %}../../vars.cfg or {% if config.env.name != "" %}../{% endif %}../../../vars.cfg')
     {%- if flags.out.cdr__exists %}
-    parser.add_argument('-bv', '--bin_viewer',
-                        help='change relative bin viewer path',
-                        default='{{ config.app.viewer_dir }}')
+    parser.add_argument('-c', '--contrib',
+                        help='change relative contrib path',
+                        default='{% if config.env.name != "" %}../{% endif %}../../vars.cfg or {% if config.env.name != "" %}../{% endif %}../../../vars.cfg')
     {%- endif %}
 
     {%- if flags.out.cdr__exists or flags.out.uri__debug %}
@@ -63,9 +63,40 @@ def parse_args():
 
     if args.select == 'All':
         args.select = None
+
     {%- if flags.app__platforms.cross_platform %}
+
     if args.executable == '{%- for item in config.app.platforms %}{{ item.executable }}{{- " / " if not loop.last }}{%- endfor %}':
         args.executable = None
+    {%- endif %}
+
+    vars = dict()
+    file_path =resolve_path(program_path.parent, '../../../vars.cfg')
+    if not file_path.exists():
+        file_path = resolve_path(program_path.parent, '../../../../vars.cfg')
+    if file_path.exists():
+        try:
+            file = open(file_path, 'r')
+            line = file.readline()
+            while line:
+                key, value = line.split(' ', 1)
+                if key.strip() == 'bin':
+                    vars['bin'] = resolve_path(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
+                {%- if flags.out.cdr__exists %}
+                elif key.strip() == 'contrib':
+                    vars['contrib'] = resolve_path(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
+                {%- endif %}
+                line = file.readline()
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            file.close()
+
+    if args.bin == '../../../vars.cfg or ../../../../vars.cfg':
+        args.bin = vars['bin']
+    {%- if flags.out.cdr__exists %}
+    if args.contrib == '../../../vars.cfg or ../../../../vars.cfg':
+        args.contrib = vars['contrib']
     {%- endif %}
 
     return args

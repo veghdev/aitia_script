@@ -1,10 +1,8 @@
 env:
     name: "sip_sipcalla"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "sipassembler"
-    dir: "../../../../../bin"
     git_group: "SIP"
     git_name: "SIPAssembler"
     ini:
@@ -59,9 +57,9 @@ app_test:
             in_uri:
                 - "file-sga://_in/testFile?name=uriDir_uriIndex"
             out_uri:
-                - "file-adg://_out/sip_cdr/testFile?name=uriDir_uriIndex&indent=true&anycontent=SIP.TransactionId&inverted=true"
+                - "file-adg://_out/sip_cdr/testFile?name=uriDir_uriIndex&indent=true&anycontent=SIP.TransactionId&inverted=true&debug=False"
                 - "file-adg://_out/sip_msg/testFile?name=uriDir_uriIndex&indent=true&anycontent=SIP.TransactionId&inverted=false"
-                - "file-adg://_out/sip_call/testFile?name=uriDir_uriIndex&sipcallasm=true&blocklinkids=Z99"
+                - "file-adg://_out/sip_call/testFile?name=uriDir_uriIndex&sipcallasm=true&blocklinkids=Z99&debug=False"
             missing_test_files:
             preprocessing:
             postprocessing:

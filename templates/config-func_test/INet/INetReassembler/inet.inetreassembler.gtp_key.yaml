@@ -1,10 +1,8 @@
 env:
     name: "gtp_key"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "inetreassembler"
-    dir: "../../../../../bin"
     git_group: "INet"
     git_name: "INetReassembler"
     ini:

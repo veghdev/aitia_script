@@ -1,10 +1,8 @@
 env:
     name: "sip_sipcalla"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "sipcallassembler"
-    dir: "../../../../../bin"
     git_group: "SIP"
     git_name: "SIPCallAssembler"
     ini:

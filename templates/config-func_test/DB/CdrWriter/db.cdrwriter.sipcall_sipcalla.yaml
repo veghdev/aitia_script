@@ -1,11 +1,8 @@
 env:
     name: "sipcall_sipcalla"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
-    lib: "../../../../lib"
 app:
     name: "cdrwriter"
-    dir: "../../../../../bin"
-    viewer_dir: "../../../../../bin_sgacdrviewer"
     git_group: "DB"
     git_name: "CdrWriter"
     ini:

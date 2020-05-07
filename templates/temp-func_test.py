@@ -26,25 +26,42 @@ def parse_args():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('-c', '--config',
-                        help='select config by name',
+                        help='config',
                         required=True)
 
     parser.add_argument('-t', '--test_dir',
-                        help='test directory relative path',
+                        help='test_dir',
                         default='../test')
+    parser.add_argument('-l', '--lib_dir',
+                        help='lib_dir',
+                        default='../lib')
 
-    parser.add_argument('-rl', '--report_level',
-                        help='set report level',
-                        choices=['VERBOSE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                        default='INFO')
-    parser.add_argument('--recreate_default_ini',
-                        help='recreate default ini',
-                        action="store_true",
-                        default=False)
-    parser.add_argument('--recreate_test_file',
-                        help='recreate test file',
+    parser.add_argument('-bd', '--bin_dir',
+                        help='bin_dir',
+                        default='../../bin')
+
+    parser.add_argument('-cd', '--contrib_dir',
+                        help='contrib_dir',
+                        default='../../contrib')
+
+    parser.add_argument('--no_create_dirs',
+                        help='no_create_dirs',
                         action="store_false",
                         default=True)
+    parser.add_argument('--no_create_default_ini',
+                        help='no_create_default_ini',
+                        action="store_false",
+                        default=True)
+
+    parser.add_argument('-rl', '--report_level',
+                        help='report_level',
+                        choices=['VERBOSE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        default='INFO')
+
+    parser.add_argument('--recreate_default_ini',
+                        help='recreate_default_ini',
+                        action="store_true",
+                        default=False)
 
     args = parser.parse_args()
 
@@ -78,7 +95,7 @@ def create_default_ini():
     logger.info('check ini_dir: {}'.format(ini_dir))
     default_ini = resolve_path(ini_dir, yaml_config['app']['name'] + '.ini')
     if not default_ini.exists() or args.recreate_default_ini:
-        app_dir = resolve_path(env_dir, yaml_config['app']['dir'])
+        app_dir = resolve_path(test_dir, args.bin_dir)
         logger.debug('app_dir: {}'.format(app_dir))
         for i in range(len(yaml_config['app']['platforms'])):
             if program_platform != yaml_config['app']['platforms'][i]['platform']:
@@ -422,6 +439,15 @@ logger = Logger(name=program_path.stem, level=args.report_level)
 # load yaml_config_file
 
 test_dir = resolve_path(program_path.parent, args.test_dir)
+try:
+    file = open(resolve_path(test_dir, 'vars.cfg'), 'w')
+    file_content = "bin {}\ncontrib {}".format(args.bin_dir, args.contrib_dir)
+    file.write(file_content + '\n')
+except Exception as e:
+    raise Exception(e)
+finally:
+    file.close()
+
 yaml_config_file = args.config
 
 
@@ -435,12 +461,6 @@ yaml_template = jinja2.Template(str(yaml.load(open(file=yaml_config_file, mode='
 yaml_config = yaml.safe_load(yaml_template.render(yaml.safe_load(yaml_template.render())))
 
 # preprocessing yaml_config_file
-
-if yaml_config['env']['name'] != "":
-    yaml_config['env']['lib'] = '../' + yaml_config['env']['lib']
-    yaml_config['app']['dir'] = '../' + yaml_config['app']['dir']
-    if 'viewer_dir' in yaml_config['app']:
-        yaml_config['app']['viewer_dir'] = '../' + yaml_config['app']['viewer_dir']
 
 if len(yaml_config['app']['platforms']) > 1:
     check_multiplatform_elements()
@@ -456,9 +476,6 @@ preprocessing__app_test__processing__in_uri()
 preprocessing__app_test__processing__out_uri()
 preprocessing__app_test__app_config__ini_config__file()
 preprocessing__app_test__app_config__runtime_config__file()
-
-if len(out_cdrs) > 0:
-    assert 'viewer_dir' in yaml_config['app'], 'app.viewer_dir does not exists'
 
 # check environment
 
@@ -494,10 +511,9 @@ test_file_content = test_file_content.replace('# j2-temp #', '')
 # write template
 
 test_file = resolve_path(env_dir, 'func_test.py')
-if not test_file.exists() or args.recreate_test_file:
-    test_file_handler = open(test_file, 'w')
-    test_file_handler.write(test_file_content + '\n')
-    test_file_handler.close
+test_file_handler = open(test_file, 'w')
+test_file_handler.write(test_file_content + '\n')
+test_file_handler.close
 logger.info('check test_file: {}'.format(test_file))
 
 # write summary template

@@ -1,10 +1,10 @@
 env:
-    name: "sip_sipa"
+    name: "scasm"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
 app:
-    name: "sipassembler"
-    git_group: "SIP"
-    git_name: "SIPAssembler"
+    name: "gtpcassembler"
+    git_group: "GTP"
+    git_name: "GTPCAssembler"
     ini:
         dir: "ini"
     platforms:
@@ -34,9 +34,6 @@ app_test:
             ini_config:
                 global:
                     - "'Log', 'LogFilesPath', str(report_path)"
-                    - "'SIPAssembler', 'CallDelayCloseTime', '30'"
-                    - "'SIPAssembler', 'CallTimeout', '5400'"
-                    - "'SIPAssembler', 'TransactionDelayCloseTime', '5'"
                 file:
                 specific_file:
             runtime_config:
@@ -45,7 +42,7 @@ app_test:
                 specific_file:
             pre_commands:
                 global:
-                    - "'assembler.legacyTZI'"
+                    - "'app.scasmonly'"
                 file:
                 specific_file:
             post_commands:
@@ -55,11 +52,9 @@ app_test:
         processing:
             test_files_to_skip:
             in_uri:
-                - "file-adg|sga://_in/testFile?name=uriDir_uriIndex&searching=../../../../SIPPreprocessor/func_test/sip/_ref_out"
+                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/gtp_sc/_ref_out"
             out_uri:
-                - "file-adg://_out/sip_cdr/testFile?name=uriDir_uriIndex&indent=true&anycontent=SIP.TransactionId&inverted=true&debug=False"
-                - "file-adg://_out/sip_msg/testFile?name=uriDir_uriIndex&indent=true&anycontent=SIP.TransactionId&inverted=false"
-                - "file-adg://_out/sip_call/testFile?name=uriDir_uriIndex&sipcallasm=true&blocklinkids=Z99&debug=False"
+                - "file-adg://_out/testFile?name=uriDir_uriIndex"
             missing_test_files:
             preprocessing:
             postprocessing:
