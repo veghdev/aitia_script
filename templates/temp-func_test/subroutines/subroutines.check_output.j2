@@ -37,8 +37,8 @@ def check_output():
         equals = True
         if out.exists():
             for item in out.iterdir():
-                item_out = resolve_path(out, item.name)
-                item_ref = resolve_path(ref, item.name)
+                item_out = pathlib.Path.joinpath(out, item.name)
+                item_ref = pathlib.Path.joinpath(ref, item.name)
                 if item.is_file():
                     if not fcmp(item_out, item_ref):
                         equals = False
@@ -57,8 +57,8 @@ def check_output():
 
         if ref.exists():
             for item in ref.iterdir():
-                item_out = resolve_path(out, item.name)
-                item_ref = resolve_path(ref, item.name)
+                item_out = pathlib.Path.joinpath(out, item.name)
+                item_ref = pathlib.Path.joinpath(ref, item.name)
                 if item.is_file():
                     if not item_out.exists() and item.suffix[1:] == 'dat':
                         equals = False
@@ -71,8 +71,8 @@ def check_output():
         return equals
 
     # out_cdr
-    out = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
-    ref = resolve_path(program_path.parent, '_ref' + out_cdr['path'], input_file.stem)
+    out = pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem)
+    ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_cdr['path'], input_file.stem)
     if not out.exists() and not ref.exists():
         passed = False
         logger.error('   FAILED: {} - output does not exist'.format(os.path.relpath(out, program_path.parent)))
@@ -86,8 +86,8 @@ def check_output():
 
     # out_uri
     for out_uri in out_uris:
-        out = resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
-        ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+        out = pathlib.Path.joinpath(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+        ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
         if out.exists():
             if not fcmp(out, ref):
                 {{- validate() | indent(16, True) }}
@@ -131,8 +131,8 @@ def check_output():
     {%- else %}
 
     # out_uri
-    out = resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
-    ref = resolve_path(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+    out = pathlib.Path.joinpath(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
+    ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_uri['path'], input_file.stem + '.' + out_uri['suffix'])
     if out.exists():
         if not fcmp(out, ref):
             {{- validate() | indent(12, True) }}
@@ -164,8 +164,8 @@ def check_output():
 
     # out_postprocessing
     for out_postprocessing in out_postprocessings:
-        out = resolve_path(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
-        ref = resolve_path(program_path.parent, '_ref' + out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+        out = pathlib.Path.joinpath(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+        ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
         if out.exists():
             if not fcmp(out, ref):
                 passed = False
@@ -188,8 +188,8 @@ def check_output():
     {%- if flags.out.har__exists %}
 
     # out_har
-    out = resolve_path(program_path.parent, out_har['path'], input_file.stem + '.' + out_har['suffix'])
-    ref = resolve_path(program_path.parent, '_ref' + out_har['path'], input_file.stem + '.' + out_har['suffix'])
+    out = pathlib.Path.joinpath(program_path.parent, out_har['path'], input_file.stem + '.' + out_har['suffix'])
+    ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_har['path'], input_file.stem + '.' + out_har['suffix'])
     if out.exists():
         if not fcmp(out, ref):
             passed = False
@@ -208,8 +208,8 @@ def check_output():
     {%- if flags.out.geo_csv__exists %}
 
     # out_geo_csv
-    out = resolve_path(program_path.parent, out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
-    ref = resolve_path(program_path.parent, '_ref' + out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
+    out = pathlib.Path.joinpath(program_path.parent, out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
+    ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_geo_csv['path'], input_file.stem + '.' + out_geo_csv['suffix'])
     if out.exists():
         if not fcmp(out, ref):
             passed = False
@@ -228,8 +228,8 @@ def check_output():
     {%- if flags.out.s1ap_dump__exists %}
 
     # out_s1ap_dump
-    out = resolve_path(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
-    ref = resolve_path(program_path.parent, '_ref' + out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
+    out = pathlib.Path.joinpath(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
+    ref = pathlib.Path.joinpath(program_path.parent, '_ref' + out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix'])
     if out.exists():
         if not fcmp(out, ref):
             passed = False

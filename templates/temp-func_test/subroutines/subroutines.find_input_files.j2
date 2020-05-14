@@ -66,14 +66,14 @@ def find_input_files():
 
     {%- if flags.app_test__processing.preprocessing %}
 
-    input_path = resolve_path(program_path.parent, in_preprocessing['path'])
+    input_path = pathlib.Path.joinpath(program_path.parent, in_preprocessing['path'])
     {{ iterate_files("if input_file.suffix[1:] != in_preprocessing['suffix']") | indent(4, True) }}
     {%- else %}
 
     {%- if flags.in.uri__main__searching %}
 
     input_paths = list()
-    input_path = resolve_path(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
+    input_path = pathlib.Path.joinpath(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
     {{- add_paths() | indent(4, True) }}
 
     for input_path in input_paths:
@@ -94,7 +94,7 @@ def find_input_files():
         {%- endif %}
     {%- else %}
 
-    input_path = resolve_path(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
+    input_path = pathlib.Path.joinpath(program_path.parent, {%- if in_uris | length > 1 %} in_uris[0]['path']{%- else %} in_uri['path']{%- endif %})
 
     {%- if in_uris[0].suffix | length > 1 %}
         {%- if in_uris | length > 1 %}

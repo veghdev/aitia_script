@@ -4,22 +4,22 @@
 # {{ item }}
 for {{ item }} in {{ item }}s:
     if {{ item }}['path'] not in paths:
-        paths.append(resolve_path(program_path.parent, {{ item }}['path']))
+        paths.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path']))
 {%- else %}
 # {{ item }}
 if {{ item }}['path'] not in paths:
-    paths.append(resolve_path(program_path.parent, {{ item }}['path']))
+    paths.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path']))
 {%- endif %}
 {%- endmacro %}
 # j2-temp #
 def clean():
-    if resolve_path(program_path.parent, 'report').exists():
-        shutil.rmtree(resolve_path(program_path.parent, 'report'))
+    if pathlib.Path.joinpath(program_path.parent, 'report').exists():
+        shutil.rmtree(pathlib.Path.joinpath(program_path.parent, 'report'))
 
     {%- if flags.out.exists %}
     {%- if flags.out.cdr__exists %}
 
-    for dir in resolve_path(program_path.parent, out_cdr['path']).iterdir():
+    for dir in pathlib.Path.joinpath(program_path.parent, out_cdr['path']).iterdir():
         shutil.rmtree(dir)
     {%- else %}
 
@@ -34,7 +34,7 @@ def clean():
     # out_postprocessing
     for out_postprocessing in out_postprocessings:
         if out_postprocessing['path'] not in paths:
-            paths.append(resolve_path(program_path.parent, out_postprocessing['path']))
+            paths.append(pathlib.Path.joinpath(program_path.parent, out_postprocessing['path']))
     {%- endif %}
 	
 	{%- if flags.out.har__exists %}{{"\n"}}{{ collect_path('out_har', out_hars | length) | indent(4, True) }}{%- endif %}

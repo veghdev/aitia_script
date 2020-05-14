@@ -3,28 +3,28 @@
 {%- if length > 1 %}
 # {{ item }}
 for {{ item }} in {{ item }}s:
-    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
+    files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
     {%- if debug %}
     {%- if different__debug %}
     # {{ item }} debug
     if {{ item }}['debug']:
-        files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+        files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
     {%- else %}
     # {{ item }} debug
-    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+    files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
     {%- endif %}
     {%- endif %}
 {%- else %}
 # {{ item }}
-files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
+files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.' + {{ item }}['suffix']))
 {%- if debug %}
 {%- if different__debug %}
 # {{ item }} debug
 if {{ item }}['debug']:
-    files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+    files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
 {%- else %}
 # {{ item }} debug
-files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
+files.append(pathlib.Path.joinpath(program_path.parent, {{ item }}['path'], input_file.stem + '.{{ debug__format }}'))
 {%- endif %}
 {%- endif %}
 {%- endif %}
@@ -32,7 +32,7 @@ files.append(resolve_path(program_path.parent, {{ item }}['path'], input_file.st
 # j2-temp #
 def clean_output():
     {%- if flags.out.cdr__exists %}
-    path = resolve_path(program_path.parent, out_cdr['path'], input_file.stem)
+    path = pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem)
     if path.exists():
         shutil.rmtree(path)
     {%- else %}

@@ -2,8 +2,8 @@
 def configure_output():
     {%- if out_uris | length > 1 %}
     for out_uri in out_uris:
-        app.open_connection(direction='out', uri='file-{}://{}?{}'.format(out_uri['suffix'], resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix']), out_uri['params']))
+        app.open_connection(direction='out', uri='file-{}://{}?{}'.format(out_uri['suffix'], pathlib.Path.joinpath(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix']), out_uri['params']))
     {%- else %}
-    app.open_connection(direction='out', uri='file-{}://{}?{}'.format(out_uri['suffix'], resolve_path(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix']), out_uri['params']))
+    app.open_connection(direction='out', uri='file-{}://{}?{}'.format(out_uri['suffix'], pathlib.Path.joinpath(program_path.parent, out_uri['path'], input_file.stem + '.' + out_uri['suffix']), out_uri['params']))
     {%- endif %}
 # j2-temp #

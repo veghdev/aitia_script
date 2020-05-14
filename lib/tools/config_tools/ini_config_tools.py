@@ -31,7 +31,7 @@ class Ini:
             if isinstance(ini, pathlib.Path):
                 self._content = self._read_ini_file(ini)
             elif isinstance(ini, str):
-                self._content = self._read_ini_file(pathlib.Path(ini).resolve())
+                self._content = self._read_ini_file(pathlib.Path(ini))
             elif isinstance(ini, list):
                 self._content = ini
             else:
@@ -52,7 +52,7 @@ class Ini:
             if isinstance(ini, pathlib.Path):
                 self._file = ini
             elif isinstance(ini, str):
-                self._file = pathlib.Path(ini).resolve()
+                self._file = pathlib.Path(ini)
             elif ini is None:
                 self._file = None
             else:

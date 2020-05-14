@@ -15,24 +15,24 @@ def set_up_runtime_config():
 
     # set out_cdr
     {%- if out_cdrs[0].type == 'S1APCDRWriter' or out_cdrs[0].type == 'SIPCDRWriter' %}
-    if not resolve_path(program_path.parent, out_cdr['path'], input_file.stem).exists():
-        resolve_path(program_path.parent, out_cdr['path'], input_file.stem).mkdir(parents=True, exist_ok=True)
+    if not pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem).exists():
+        pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem).mkdir(parents=True, exist_ok=True)
     {%- endif %}
-    append_ans(app.set_config('{{ out_cdrs[0].type }}', 'DataPathPrimary', str(resolve_path(program_path.parent, out_cdr['path'], input_file.stem))))
-    append_ans(app.set_config('{{ out_cdrs[0].type }}', 'IndexPath', str(resolve_path(program_path.parent, out_cdr['path'], input_file.stem))))
+    append_ans(app.set_config('{{ out_cdrs[0].type }}', 'DataPathPrimary', str(pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem))))
+    append_ans(app.set_config('{{ out_cdrs[0].type }}', 'IndexPath', str(pathlib.Path.joinpath(program_path.parent, out_cdr['path'], input_file.stem))))
     {%- endif %}
 
     {%- if flags.out.har__exists %}
 
     # set out_har
     append_ans(app.set_config('S1APHARWriterRuntime', 'HAROutputBaseName', input_file.stem))
-    append_ans(app.set_config('S1APHARWriterRuntime', 'HAROutputDir', str(resolve_path(program_path.parent, out_har['path']))))
+    append_ans(app.set_config('S1APHARWriterRuntime', 'HAROutputDir', str(pathlib.Path.joinpath(program_path.parent, out_har['path']))))
     {%- endif %}
 	
 	{%- if flags.out.s1ap_dump__exists %}
 
     # set out_s1ap_dump
-    append_ans(app.set_config('S1APAssembler', 'DumpFile', str(resolve_path(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix']))))
+    append_ans(app.set_config('S1APAssembler', 'DumpFile', str(pathlib.Path.joinpath(program_path.parent, out_s1ap_dump['path'], input_file.stem + '.' + out_s1ap_dump['suffix']))))
     {%- endif %}
 
     {%- if flags.app_test__app_config__runtime_config.file %}

@@ -8,14 +8,14 @@ def resolve_path_links(path):
     if path not in resolved_path_links:
         path_links = list()
 
-        if resolve_path(path, '_path_links.cfg').exists():
+        if pathlib.Path.joinpath(path, '_path_links.cfg').exists():
             try:
-                file = open(resolve_path(path, '_path_links.cfg'), 'r')
+                file = open(pathlib.Path.joinpath(path, '_path_links.cfg'), 'r')
                 line = file.readline()
                 while line:
                     if args.link_out:
                         line = line.replace('_ref', '')
-                    path_link = resolve_path(path, line.strip())
+                    path_link = pathlib.Path.joinpath(path, line.strip())
                     if path_link not in path_links:
                         path_links.append(path_link)
                     line = file.readline()
@@ -30,14 +30,14 @@ def resolve_path_links(path):
     {%- else %}
     path_links = list()
 
-    if resolve_path(path, '_path_links.cfg').exists():
+    if pathlib.Path.joinpath(path, '_path_links.cfg').exists():
         try:
-            file = open(resolve_path(path, '_path_links.cfg'), 'r')
+            file = open(pathlib.Path.joinpath(path, '_path_links.cfg'), 'r')
             line = file.readline()
             while line:
                 if args.link_out:
                     line = line.replace('_ref', '')
-                path_link = resolve_path(path, line.strip())
+                path_link = pathlib.Path.joinpath(path, line.strip())
                 if path_link not in path_links:
                     path_links.append(path_link)
                 line = file.readline()

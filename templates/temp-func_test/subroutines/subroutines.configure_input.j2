@@ -1,9 +1,9 @@
 # j2-temp #
 def configure_input():
 {%- if in_uris | length == 1 %}
-    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uri['suffix'], resolve_path(program_path.parent, in_uri['path'], input_file.stem + '.' + in_uri['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uri['params']))
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uri['suffix'], pathlib.Path.joinpath(program_path.parent, in_uri['path'], input_file.stem + '.' + in_uri['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uri['params']))
 {%- elif in_uris | length == 2 %}
-    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uris[0]['suffix'], resolve_path(program_path.parent, in_uris[0]['path'], input_file.stem + '.' + in_uris[0]['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uris[0]['params']))
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uris[0]['suffix'], pathlib.Path.joinpath(program_path.parent, in_uris[0]['path'], input_file.stem + '.' + in_uris[0]['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uris[0]['params']))
 
     additional_input_file = find_additional_input_file(in_uris[1])
     if additional_input_file is not None:
@@ -14,7 +14,7 @@ def configure_input():
 		logger.error('   FAILED: {} - additional input does not exist'.format(in_uris[1]['path']))
     {%- endif %}
 {%- elif in_uris | length > 2 %}
-    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uris[0]['suffix'], resolve_path(program_path.parent, in_uris[0]['path'], input_file.stem + '.' + in_uris[0]['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uris[0]['params']))
+    app.open_connection(direction='in', uri='file-{}://{}?{}'.format({%- if flags.app_test__processing.preprocessing %}in_uris[0]['suffix'], pathlib.Path.joinpath(program_path.parent, in_uris[0]['path'], input_file.stem + '.' + in_uris[0]['suffix']){%- else %}input_file.suffix[1:], input_file{%- endif %}, in_uris[0]['params']))
 
     for in_uri in in_uris[1:]:
         additional_input_file = find_additional_input_file(in_uri)

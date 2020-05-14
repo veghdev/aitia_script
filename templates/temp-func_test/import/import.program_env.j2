@@ -3,9 +3,9 @@ import sys
 import pathlib
 {%- if flags.app__platforms.cross_platform %}{{"\n"}}import platform{%- endif %}
 program_path = pathlib.Path(__file__).absolute()
-program_lib_path = pathlib.Path.joinpath(program_path.parent, '{% if config.env.name != "" %}../{% endif %}../../../../lib').resolve()
+program_lib_path = pathlib.Path.joinpath(program_path.parent, '{% if config.env.name != "" %}../{% endif %}../../../../lib')
 program_version = '{{ config.app_test.version }}'
 {%- if flags.app__platforms.cross_platform %}{{"\n"}}program_platform = platform.system(){%- endif %}
 program_time = time.time()
-sys.path.append(str(program_lib_path))
+sys.path.append(str(program_lib_path.resolve()))
 # j2-temp #

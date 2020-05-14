@@ -1,10 +1,10 @@
 env:
-    name: "scasm"
+    name: "gtp_stat"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
 app:
-    name: "gtpcassembler"
-    git_group: "GTP"
-    git_name: "GTPCAssembler"
+    name: "inetreassembler"
+    git_group: "INet"
+    git_name: "INetReassembler"
     ini:
         dir: "ini"
     platforms:
@@ -34,6 +34,8 @@ app_test:
             ini_config:
                 global:
                     - "'Log', 'LogFilesPath', str(report_path)"
+                    - "'Output', 'SortingQueueDelay', '3000'"
+                    - "'Output', 'SortingQueueLength', '3000'"
                 file:
                 specific_file:
             runtime_config:
@@ -42,7 +44,6 @@ app_test:
                 specific_file:
             pre_commands:
                 global:
-                    - "'app.scasmonly'"
                 file:
                 specific_file:
             post_commands:
@@ -52,10 +53,9 @@ app_test:
         processing:
             test_files_to_skip:
             in_uri:
-                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/gtp_sc/_ref_out"
+                - "file-sga://_in/testFile?name=uriDir_uriIndex"
             out_uri:
-                - "file-adg://_out/testFile?name=uriDir_uriIndex&debug=False"
-                - "file-yaml://_out/testFile?name=uriDir_uriIndex&debug=False"
+                - "file-adg://_out/testFile?name=uriDir_uriIndex"
             missing_test_files:
             preprocessing:
             postprocessing:

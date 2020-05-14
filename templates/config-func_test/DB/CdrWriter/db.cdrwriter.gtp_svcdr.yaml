@@ -1,10 +1,10 @@
 env:
-    name: "scasm"
+    name: "gtp_svcdr"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
 app:
-    name: "gtpcassembler"
-    git_group: "GTP"
-    git_name: "GTPCAssembler"
+    name: "cdrwriter"
+    git_group: "DB"
+    git_name: "CdrWriter"
     ini:
         dir: "ini"
     platforms:
@@ -30,6 +30,7 @@ app:
                 adg: "adg.exe"
 app_test:
         version: "0.0.1"
+        description: "{{ app.git_name }} {{ env.name }} {{ app_test.name }}"
         app_config:
             ini_config:
                 global:
@@ -39,10 +40,11 @@ app_test:
             runtime_config:
                 global:
                 file:
+                    - "'CDR', 'DataPathPrimary', '_out/testFile'"
+                    - "'CDR', 'IndexPath', '_out/testFile'"
                 specific_file:
             pre_commands:
                 global:
-                    - "'app.scasmonly'"
                 file:
                 specific_file:
             post_commands:
@@ -52,10 +54,8 @@ app_test:
         processing:
             test_files_to_skip:
             in_uri:
-                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/gtp_sc/_ref_out"
+                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../GTP/GTPCAssembler/func_test/svcdr/_ref_out"
             out_uri:
-                - "file-adg://_out/testFile?name=uriDir_uriIndex&debug=False"
-                - "file-yaml://_out/testFile?name=uriDir_uriIndex&debug=False"
             missing_test_files:
             preprocessing:
             postprocessing:

@@ -101,20 +101,30 @@ class Control:
             try:
                 timeout = time.time() + 3
                 while True:
-                    ans = self._cterm_interface.command('ptestpid', self._pid)
-                    if ans['value'] == '0':
-                        break
-                    if time.time() > timeout:
-                        self._cterm_interface.command('pdelpid', self._pid)
-                        raise Exception('app({}) is still runnig'.format(self._pid))
-            except Exception as e:
-                timeout = time.time() + 2
-                while True:
                     ans = self._cterm_interface.command('pdelpid', self._pid)
                     if ans['value'] == '0':
                         break
                     if time.time() > timeout:
-                        raise Exception(e)
+                        raise Exception('app({}) is still runnig'.format(self._pid))
+            except Exception as e:
+                raise Exception(e)
+            # try:
+            #     timeout = time.time() + 3
+            #     while True:
+            #         ans = self._cterm_interface.command('ptestpid', self._pid)
+            #         if ans['value'] == '0':
+            #             break
+            #         if time.time() > timeout:
+            #             self._cterm_interface.command('pdelpid', self._pid)
+            #             raise Exception('app({}) is still runnig'.format(self._pid))
+            # except Exception as e:
+            #     timeout = time.time() + 2
+            #     while True:
+            #         ans = self._cterm_interface.command('pdelpid', self._pid)
+            #         if ans['value'] == '0':
+            #             break
+            #         if time.time() > timeout:
+            #             raise Exception(e)
             pid = str(self._pid)
             self._pid = None
             return pid

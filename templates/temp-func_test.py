@@ -524,31 +524,15 @@ for config in resolve_path(yaml_config_file).parent.iterdir():
 func_tests = '\n'.join(func_tests)
 
 if yaml_config['env']['name'] != "":
-    path = resolve_path(test_dir, yaml_config['env']['dir']).parent
-    summary_file = resolve_path(path, 'func_test.py')
-
-    summary_file_content = """import sys
-import subprocess
-\n\ndef processing():
-    global exit_code
-    for process in processes:
-        ans = subprocess.call(['python',r'{}'.format(process), *sys.argv[1:]])
-        if ans != 0:
-            if exit_code != 0:
-                if ans < exit_code:
-                    exit_code = ans
-            else:
-                exit_code = ans
-    exit(exit_code)
-\n\nexit_code = 0
-processes = list()
-{}
-processing()""".format('{}', func_tests)
-
-    try:
-        file = open(summary_file, 'w')
-        file.write(summary_file_content + '\n')
-    except Exception as e:
-        raise Exception(e)
-    finally:
-        file.close()
+    shutil.copy2(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'),
+                 resolve_path(test_dir, yaml_config['app']['git_group'], yaml_config['app']['git_name'], 'func_test',
+                              'func_test.py'))
+    logger.debug('shutil.copy2({}, {})'.format(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'),
+                                               resolve_path(test_dir, yaml_config['app']['git_group'], 'func_test',
+                                                            yaml_config['app']['git_name'], 'func_test.py')))
+shutil.copy2(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, yaml_config['app']['git_group'], yaml_config['app']['git_name'], 'func_test.py'))
+logger.debug('shutil.copy2({}, {})'.format(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, yaml_config['app']['git_group'], yaml_config['app']['git_name'], 'func_test.py')))
+shutil.copy2(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, yaml_config['app']['git_group'], 'func_test.py'))
+logger.debug('shutil.copy2({}, {})'.format(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, yaml_config['app']['git_group'], 'func_test.py')))
+shutil.copy2(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, 'func_test.py'))
+logger.debug('shutil.copy2({}, {})'.format(resolve_path(program_path.parent, 'temp-func_test', 'temp-func_test.py'), resolve_path(test_dir, 'func_test.py')))

@@ -61,8 +61,8 @@ app_test:
                 in_preprocessing: "{'path': '_in', 'suffix': 'sga'}"
                 out_preprocessing: "{'path': '_in_tmp', 'suffix': 'sga'}"
                 code: |
-                    with open(resolve_path(program_path.parent, out_preprocessing['path'], input_file.stem + '.' + out_preprocessing['suffix']),'wb') as wfd:
-                        for f in [input_file, resolve_path(program_path.parent, in_preprocessing['path'], '_additional_message_end')]:
+                    with open(pathlib.Path.joinpath(program_path.parent, out_preprocessing['path'], input_file.stem + '.' + out_preprocessing['suffix']),'wb') as wfd:
+                        for f in [input_file, pathlib.Path.joinpath(program_path.parent, in_preprocessing['path'], '_additional_message_end')]:
                             with open(f,'rb') as fd:
                                 shutil.copyfileobj(fd, wfd)
             postprocessing:

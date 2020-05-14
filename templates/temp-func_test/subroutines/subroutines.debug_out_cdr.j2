@@ -1,13 +1,13 @@
 # j2-temp #
 def debug_out_cdr(src, dst):
     command = [
-        str(resolve_path(bin_sgacdrviewer_path, 'SgaCDRViewer-offline.exe')),
-        '-l', str(resolve_path(report_path, 'SgaCDRViewer-offline.log')),
+        str(pathlib.Path.joinpath(bin_sgacdrviewer_path, 'SgaCDRViewer-offline.exe')),
+        '-l', str(pathlib.Path.joinpath(report_path, 'SgaCDRViewer-offline.log')),
         '-u', 'sga', '-p', 'sga', '-r', 'testing',
         '-vr', 'normal', '-cr', '0', '-ct', 'ALL',
         '-o', 'txt',
         '-v', '1', '-d', '1',
-        '-f', str(resolve_path(bin_sgacdrviewer_path, 'cdrviewerOffline.CdrFilt')),
+        '-f', str(pathlib.Path.joinpath(bin_sgacdrviewer_path, 'cdrviewerOffline.CdrFilt')),
         '-out', str(dst),
         '-of', str(src)
     ]

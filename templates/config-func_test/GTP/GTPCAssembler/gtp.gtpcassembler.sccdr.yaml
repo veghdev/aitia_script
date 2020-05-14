@@ -1,5 +1,5 @@
 env:
-    name: "scasm"
+    name: "sccdr"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
 app:
     name: "gtpcassembler"
@@ -42,7 +42,7 @@ app_test:
                 specific_file:
             pre_commands:
                 global:
-                    - "'app.scasmonly'"
+                    - "'app.sccdronly'"
                 file:
                 specific_file:
             post_commands:

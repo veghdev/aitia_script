@@ -71,9 +71,9 @@ def parse_args():
     {%- endif %}
 
     vars = dict()
-    file_path =resolve_path(program_path.parent, '../../../vars.cfg')
+    file_path =pathlib.Path.joinpath(program_path.parent, '{% if config.env.name != "" %}../{% endif %}../../vars.cfg')
     if not file_path.exists():
-        file_path = resolve_path(program_path.parent, '../../../../vars.cfg')
+        file_path = pathlib.Path.joinpath(program_path.parent, '{% if config.env.name != "" %}../{% endif %}../../../vars.cfg')
     if file_path.exists():
         try:
             file = open(file_path, 'r')
@@ -81,10 +81,10 @@ def parse_args():
             while line:
                 key, value = line.split(' ', 1)
                 if key.strip() == 'bin':
-                    vars['bin'] = resolve_path(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
+                    vars['bin'] = pathlib.Path.joinpath(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
                 {%- if flags.out.cdr__exists %}
                 elif key.strip() == 'contrib':
-                    vars['contrib'] = resolve_path(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
+                    vars['contrib'] = pathlib.Path.joinpath(program_path.parent, os.path.relpath(file_path.parent, program_path.parent), value.strip())
                 {%- endif %}
                 line = file.readline()
         except Exception as e:
@@ -92,10 +92,10 @@ def parse_args():
         finally:
             file.close()
 
-    if args.bin == '../../../vars.cfg or ../../../../vars.cfg':
+    if args.bin == '{% if config.env.name != "" %}../{% endif %}../../vars.cfg or {% if config.env.name != "" %}../{% endif %}../../../vars.cfg':
         args.bin = vars['bin']
     {%- if flags.out.cdr__exists %}
-    if args.contrib == '../../../vars.cfg or ../../../../vars.cfg':
+    if args.contrib == '{% if config.env.name != "" %}../{% endif %}../../vars.cfg or {% if config.env.name != "" %}../{% endif %}../../../vars.cfg':
         args.contrib = vars['contrib']
     {%- endif %}
 

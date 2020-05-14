@@ -64,8 +64,8 @@ app_test:
                 out_postprocessing: "[{'path': '_out/sip_msg', 'suffix': 'adg', 'params': ['protocol.pass', 'ip4', 'ip6']}, {'path': '_out/sip_processed', 'suffix': 'adg', 'params': ['protocol.block', 'ip4', 'ip6']}]"
                 code: |
                     for out_postprocessing in out_postprocessings:
-                        in_f = resolve_path(program_path.parent, in_postprocessing['path'], input_file.stem + '.' + in_postprocessing['suffix'])
-                        out_f = resolve_path(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
+                        in_f = pathlib.Path.joinpath(program_path.parent, in_postprocessing['path'], input_file.stem + '.' + in_postprocessing['suffix'])
+                        out_f = pathlib.Path.joinpath(program_path.parent, out_postprocessing['path'], input_file.stem + '.' + out_postprocessing['suffix'])
                         
                         if in_f.stat().st_size != 0:
                             command = [

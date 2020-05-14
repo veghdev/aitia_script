@@ -1,6 +1,6 @@
 # j2-temp #
 def find_additional_input_file(in_uri):
-    additional_input_file = resolve_path(program_path.parent, in_uri['path'], input_file.stem + '.' + in_uri['suffix'])
+    additional_input_file = pathlib.Path.joinpath(program_path.parent, in_uri['path'], input_file.stem + '.' + in_uri['suffix'])
     if additional_input_file.exists():
         if additional_input_file.stat().st_size != 0:
             return additional_input_file
@@ -8,7 +8,7 @@ def find_additional_input_file(in_uri):
     else:
         path_links = resolve_path_links(additional_input_file.parent)
         for path_link in path_links:
-            additional_input_file = resolve_path(path_link, input_file.stem + '.' + in_uri['suffix'])
+            additional_input_file = pathlib.Path.joinpath(path_link, input_file.stem + '.' + in_uri['suffix'])
             if additional_input_file.exists():
                 if additional_input_file.stat().st_size != 0:
                     return additional_input_file
@@ -17,7 +17,7 @@ def find_additional_input_file(in_uri):
         if in_uri['searching']:
             path_links = resolve_path_links(additional_input_file.parent)
             for path_link in path_links:
-                additional_input_file = resolve_path(path_link, input_file.stem + '.' + in_uri['suffix'])
+                additional_input_file = pathlib.Path.joinpath(path_link, input_file.stem + '.' + in_uri['suffix'])
                 if additional_input_file.exists():
                     if additional_input_file.stat().st_size != 0:
                         return additional_input_file

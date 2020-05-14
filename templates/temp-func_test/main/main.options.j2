@@ -1,16 +1,16 @@
 # j2-temp #
 logger.info('options:')
-logger.info('   {:16s} = {}'.format('program', program_path))
+logger.info('   {:16s} = {}'.format('program', program_path.resolve()))
 logger.info('   {:16s} = {}'.format('program_version', program_version))
-logger.info('   {:16s} = {}'.format('program_lib_path', program_lib_path))
-logger.info('   {:16s} = {}'.format('bin_path', bin_path))
-{%- if flags.out.cdr__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('bin_sgacdrviewer_path', bin_sgacdrviewer_path)){%- endif%}
+logger.info('   {:16s} = {}'.format('program_lib_path', program_lib_path.resolve()))
+logger.info('   {:16s} = {}'.format('bin_path', bin_path.resolve()))
+{%- if flags.out.cdr__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('bin_sgacdrviewer_path', bin_sgacdrviewer_path.resolve())){%- endif%}
 logger.info('   {:16s} = {}'.format('app_name', app_name))
 logger.info('   {:16s} = {}'.format('app_port', app_port))
-logger.info('   {:16s} = {}'.format('app_path', app_path))
-logger.info('   {:16s} = {}'.format('app_ini_path', app_ini_path))
-logger.info('   {:16s} = {}'.format('base_ini_path', base_ini_path))
-logger.info('   {:16s} = {}'.format('report_path', report_path))
+logger.info('   {:16s} = {}'.format('app_path', app_path.resolve()))
+logger.info('   {:16s} = {}'.format('app_ini_path', app_ini_path.resolve()))
+logger.info('   {:16s} = {}'.format('base_ini_path', base_ini_path.resolve()))
+logger.info('   {:16s} = {}'.format('report_path', report_path.resolve()))
 logger.info('   {:16s} = {}'.format('report_level', report_level))
 {%- if flags.app_test__processing.preprocessing %}{{"\n"}}logger.info('   {:16s} = {}'.format('in_preprocessing', in_preprocessing)){%- endif %}
 {%- if flags.app_test__processing.preprocessing %}{{"\n"}}logger.info('   {:16s} = {}'.format('out_preprocessing', out_preprocessing)){%- endif %}
@@ -34,8 +34,8 @@ logger.info('   {:16s} = {}'.format('out_uri', out_uri))
 {%- if flags.out.har__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('out_har', out_har)){%- endif %}
 {%- if flags.out.geo_csv__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('out_geo_csv', out_geo_csv)){%- endif %}
 {%- if flags.out.s1ap_dump__exists %}{{"\n"}}logger.info('   {:16s} = {}'.format('out_s1ap_dump', out_s1ap_dump)){%- endif %}
-{%- if flags.app__platforms.utilities__cterm %}{{"\n"}}logger.info('   {:16s} = {}'.format('cterm_path', cterm_path)){%- endif%}
-{%- if flags.app__platforms.utilities__adg %}{{"\n"}}logger.info('   {:16s} = {}'.format('adg_path', adg_path)){%- endif%}
+{%- if flags.app__platforms.utilities__cterm %}{{"\n"}}logger.info('   {:16s} = {}'.format('cterm_path', cterm_path.resolve())){%- endif%}
+{%- if flags.app__platforms.utilities__adg %}{{"\n"}}logger.info('   {:16s} = {}'.format('adg_path', adg_path.resolve())){%- endif%}
 {%- if flags.app_test__processing.test_files_to_skip %}{{"\n"}}logger.info('   {} =\n - {}'.format('test_files_to_skip', '\n - '.join(test_files_to_skip)), foreground_color='light cyan'){%- endif%}
 {%- if flags.app_test__app_config__ini_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('ini_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in ini_config__specific_file.items())), foreground_color='light cyan'){%- endif%}
 {%- if flags.app_test__app_config__runtime_config.specific_file %}{{"\n"}}logger.info('   {} =\n - {}'.format('runtime_config__specific_file', '\n - '.join('{} : {}'.format(key, value) for key, value in runtime_config__specific_file.items())), foreground_color='light cyan'){%- endif%}

@@ -1,5 +1,5 @@
 env:
-    name: "scasm"
+    name: "svcdr"
     dir: "{{ app.git_group }}/{{ app.git_name }}/func_test/{{ env.name }}"
 app:
     name: "gtpcassembler"
@@ -42,7 +42,7 @@ app_test:
                 specific_file:
             pre_commands:
                 global:
-                    - "'app.scasmonly'"
+                    - "'app.sccdronly'"
                 file:
                 specific_file:
             post_commands:
@@ -52,10 +52,9 @@ app_test:
         processing:
             test_files_to_skip:
             in_uri:
-                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/gtp_sc/_ref_out"
+                - "file-adg://_in/testFile?name=uriDir_uriIndex&searching=../../../../../INet/INetReassembler/func_test/gtp_sv/_ref_out"
             out_uri:
-                - "file-adg://_out/testFile?name=uriDir_uriIndex&debug=False"
-                - "file-yaml://_out/testFile?name=uriDir_uriIndex&debug=False"
+                - "file-adg://_out/testFile?name=uriDir_uriIndex"
             missing_test_files:
             preprocessing:
             postprocessing:

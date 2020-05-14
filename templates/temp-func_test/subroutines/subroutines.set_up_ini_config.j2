@@ -24,7 +24,7 @@ def set_up_ini_config():
 
     # set out_geo_csv
     append_ans(ini.set_up_parameter('S1APGeo', 'CsvName', input_file.stem + '.' + out_geo_csv['suffix']))
-    append_ans(ini.set_up_parameter('S1APGeo', 'CsvDir', str(resolve_path(program_path.parent, out_geo_csv['path']))))
+    append_ans(ini.set_up_parameter('S1APGeo', 'CsvDir', str(pathlib.Path.joinpath(program_path.parent, out_geo_csv['path']))))
     {%- endif %}
 
     {%- if flags.app_test__app_config__ini_config.specific_file %}

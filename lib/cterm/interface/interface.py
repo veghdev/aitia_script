@@ -15,7 +15,7 @@ class CtermInterface:
     def __init__(self, cterm):
         try:
             self._logger = logging.getLogger(__name__)
-            cterm = pathlib.Path(cterm).resolve()
+            cterm = pathlib.Path(cterm)
             self._process = subprocess.Popen([f'{cterm}', '-i', '-e'],
                                              stdin=subprocess.PIPE,
                                              stdout=subprocess.PIPE,
