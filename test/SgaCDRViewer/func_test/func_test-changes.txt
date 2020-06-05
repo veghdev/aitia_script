@@ -1,3 +1,8 @@
+## [0.0.3] - 2020-04-08
+### Fixed
+- fix pyyaml 5.3.1 usage
+- fix ptestpid/pdelpid
+
 ## [0.0.2] - 2020-04-08
 ### Added
 - added pyyaml 5.3.1 to ext

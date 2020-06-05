@@ -231,7 +231,7 @@ try:
         # sgacdrqueryserver.stop()
         cterm.command('pdelpid', sgacdrqueryserver._pid)
         while True:
-            ans = cterm.command('ptestpid', sgacdrqueryserver._pid)
+            ans = cterm.command('pdelpid', sgacdrqueryserver._pid)
             if ans['value'] == '0':
                 break
         sgacdrqueryserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgacdrqueryserver_name}*.log')]
@@ -245,7 +245,7 @@ try:
         # sgaautho.stop()
         cterm.command('pdelpid', sgaautho._pid)
         while True:
-            ans = cterm.command('ptestpid', sgaautho._pid)
+            ans = cterm.command('pdelpid', sgaautho._pid)
             if ans['value'] == '0':
                 break
         sgaautho_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgaautho_name}*.log')]
