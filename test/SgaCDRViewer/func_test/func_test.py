@@ -2,7 +2,7 @@ import pathlib
 import sys
 program_path = str(pathlib.Path(sys.path[0]))
 program_name = pathlib.Path(__file__).stem
-program_version = '0.0.2'
+program_version = '0.0.4'
 program_lib_path = str(pathlib.Path(program_path, '../../../lib').resolve())
 program_ext_path = str(pathlib.Path(program_path, '../../../ext').resolve())
 sys.path.append(program_lib_path)
