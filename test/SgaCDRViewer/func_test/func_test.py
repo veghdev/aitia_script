@@ -14,6 +14,8 @@ import pyyaml_5_3_1
 import subprocess
 import filecmp
 import re
+import argparse
+import traceback
 
 from tools import Logger
 from cterm import CtermInterface
@@ -22,6 +24,24 @@ from tools.config_tools.ini_config_tools import read_ini_file, write_ini_file, m
 
 
 # subroutines
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='SgaCDRViewer func_test',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('-s', '--select',
+                        help='select test cases by name using regular expression',
+                        nargs='+',
+                        default='All')
+
+    args = parser.parse_args()
+
+    if args.select == 'All':
+        args.select = None
+
+    return args
+
+
 def resolve_path(o_path, o_name, make_path=False):
     original = str(pathlib.Path(o_path, o_name).resolve())
     if not os.path.exists(original):
@@ -40,11 +60,15 @@ def resolve_path(o_path, o_name, make_path=False):
 
 
 # parameters
+
+args = parse_args()
+
 log_level = 'INFO'  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 log_path = str(pathlib.Path(program_path, program_name).resolve())
 bin_path = str(pathlib.Path(program_path, '../bin').resolve())
 test_cases_path = str(pathlib.Path(program_path, 'test_cases').resolve())
 shared_test_files_path = str(pathlib.Path(program_path, 'shared_test_files').resolve())
+
 
 # create logger
 logger = Logger(logger=program_name, log_level=log_level, log_file=log_path)
@@ -70,7 +94,19 @@ try:
     unstable = 0
     # iterate through test case directories
     test_cases = os.listdir(pathlib.Path(test_cases_path))
+
     for test_case in test_cases:
+
+        if args.select is not None:
+            matched = False
+            for regex in args.select:
+                if re.match(r'^{}$'.format(regex), test_case):
+                    matched = True
+                    break
+            if not matched:
+                logger.log('{}{} - skipped - regular expression ({}) does not match with test case'.format(
+                   tab, test_case, args.select), text_level='WARNING', foreground_color='yellow')
+                continue
 
         # test parameters
         logger.log(f'{tab}{test_case} - options:', text_level='DEBUG', foreground_color='light blue')
@@ -228,12 +264,12 @@ try:
         process.communicate()
 
         # stop sgacdrqueryserver
-        # sgacdrqueryserver.stop()
-        cterm.command('pdelpid', sgacdrqueryserver._pid)
-        while True:
-            ans = cterm.command('pdelpid', sgacdrqueryserver._pid)
-            if ans['value'] == '0':
-                break
+        sgacdrqueryserver.stop()
+        # cterm.command('pdelpid', sgacdrqueryserver._pid)
+        # while True:
+        #     ans = cterm.command('pdelpid', sgacdrqueryserver._pid)
+        #     if ans['value'] == '0':
+        #         break
         sgacdrqueryserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgacdrqueryserver_name}*.log')]
         for log in sgacdrqueryserver_logs:
             debug_file = str(pathlib.Path(debug_resolved['path'], log.name).resolve())
@@ -242,12 +278,12 @@ try:
                    foreground_color='light blue')
 
         # stop sgaautho
-        # sgaautho.stop()
-        cterm.command('pdelpid', sgaautho._pid)
-        while True:
-            ans = cterm.command('pdelpid', sgaautho._pid)
-            if ans['value'] == '0':
-                break
+        sgaautho.stop()
+        # cterm.command('pdelpid', sgaautho._pid)
+        # while True:
+        #     ans = cterm.command('pdelpid', sgaautho._pid)
+        #     if ans['value'] == '0':
+        #         break
         sgaautho_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgaautho_name}*.log')]
         for log in sgaautho_logs:
             debug_file = str(pathlib.Path(debug_resolved['path'], log.name).resolve())
@@ -351,7 +387,8 @@ try:
         exit(2)
 
 except Exception as e:
-    logger.log('{}: unexpected error: {}'.format(e.__class__.__name__, e),
+    tb = traceback.format_exc()
+    logger.log('{}: unexpected error: {}\n{}'.format(e.__class__.__name__, e, tb),
                text_level='CRITICAL', foreground_color='light red')
     logger.log(f'exit status: UNEXPECTED FAILURE', text_level='CRITICAL', foreground_color='light red')
     exit(1)

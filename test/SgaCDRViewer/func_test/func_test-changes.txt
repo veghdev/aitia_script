@@ -1,4 +1,11 @@
-## [0.0.3] - 2020-04-08
+## [0.0.4] - 2020-06-08
+### Added
+- added command line arguments: help, select
+
+### Fixed
+- restore sgaautho and sgacdrqueryserver closing
+
+## [0.0.3] - 2020-06-05
 ### Fixed
 - fix pyyaml 5.3.1 usage
 - fix ptestpid/pdelpid
