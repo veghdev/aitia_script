@@ -2,7 +2,7 @@ import pathlib
 import sys
 program_path = str(pathlib.Path(sys.path[0]))
 program_name = pathlib.Path(__file__).stem
-program_version = '0.0.4'
+program_version = '0.0.5'
 program_lib_path = str(pathlib.Path(program_path, '../../../lib').resolve())
 program_ext_path = str(pathlib.Path(program_path, '../../../ext').resolve())
 sys.path.append(program_lib_path)
@@ -19,7 +19,7 @@ import traceback
 
 from tools import Logger
 from cterm import CtermInterface
-from app.gy_app import ControlSgaCDRQueryServer, ControlSgaAutho
+from app.gy_app import ControlSgaCDRQueryServer, ControlSgaAutho, ControlSgaFileCaptureServer
 from tools.config_tools.ini_config_tools import read_ini_file, write_ini_file, modify_ini_content
 
 
@@ -33,6 +33,11 @@ def parse_args():
                         help='select test cases by name using regular expression',
                         nargs='+',
                         default='All')
+
+    parser.add_argument('--clean',
+                        help='delete reports and all outputs and exit',
+                        action="store_true",
+                        default=False)
 
     args = parser.parse_args()
 
@@ -59,6 +64,24 @@ def resolve_path(o_path, o_name, make_path=False):
     return {'path': original, 'o_name': o_name, 'o_path': original}
 
 
+def clean():
+    for item in pathlib.Path(program_path).iterdir():
+        if item.is_file():
+            if item.suffix == '.log':
+                item.unlink()
+
+    for test_case in pathlib.Path(test_cases_path).iterdir():
+        if test_case.is_dir():
+            out = pathlib.Path.joinpath(test_case, 'out')
+            if out.exists():
+                shutil.rmtree(out)
+            debug = pathlib.Path.joinpath(test_case, 'debug')
+            if debug.exists():
+                shutil.rmtree(debug)
+
+    exit(0)
+
+
 # parameters
 
 args = parse_args()
@@ -68,6 +91,9 @@ log_path = str(pathlib.Path(program_path, program_name).resolve())
 bin_path = str(pathlib.Path(program_path, '../bin').resolve())
 test_cases_path = str(pathlib.Path(program_path, 'test_cases').resolve())
 shared_test_files_path = str(pathlib.Path(program_path, 'shared_test_files').resolve())
+
+if args.clean:
+    clean()
 
 
 # create logger
@@ -149,15 +175,52 @@ try:
             logger.log(f'{tab}{test_case} - {tab}command_path : {command_resolve["path"]}', text_level='DEBUG')
         command_yaml = pyyaml_5_3_1.load(open(file=command_resolve['path'], mode='r'), Loader=pyyaml_5_3_1.FullLoader)
 
+        testFilter_path = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), 'testFilter.CdrFilt')
+        if testFilter_path['path'] != testFilter_path['o_path']:
+            logger.log(f'{tab}{test_case} - {tab}testFilter.CdrFilt: {testFilter_path["path"]}'
+                       f'(resolved from __{testFilter_path["o_name"]})',
+                       text_level='DEBUG', foreground_color='light cyan')
+        else:
+            logger.log(f'{tab}{test_case} - {tab}testFilter.CdrFilt : {testFilter_path["path"]}', text_level='DEBUG')
+
+        logger.log(f'{tab}{test_case} - parameters:', text_level='DEBUG', foreground_color='light blue')
+        default_parameters = {
+            'user': 'bssap',
+            'password': 'Bssap01',
+            'reason': 'testing',
+            'log': str(pathlib.Path(out_resolved['path'], 'log.log').resolve()),
+            'filter': str(pathlib.Path(testFilter_path['path']).resolve()),
+            'out': str(pathlib.Path(out_resolved['path'], 'out').resolve())
+        }
+        command_list = []
+        for parameter in command_yaml['parameters']:
+            for key in parameter:
+                if key == 'o':
+                    default_parameters['out_type'] = parameter[key]
+                    break
+        for parameter in command_yaml['parameters']:
+            for key in parameter:
+                if parameter[key].startswith('{{') and parameter[key].endswith('}}'):
+                    parameter[key] = parameter[key][2:-2].strip()
+                    parameter[key] = eval(parameter[key])
+                    if key == 'out':
+                        parameter[key] = parameter[key] + '.' + default_parameters['out_type']
+                command_list.append(f'-{key}')
+                command_list.append(parameter[key])
+                logger.log(f'{tab}{test_case} - {tab}{key} : {parameter[key]}', text_level='DEBUG')
+
         test_files = [
             'SgaCDRViewer.ini',
-            'testFilter.CdrFilt',
             'Sga_CDR-QueryServer.ini',
             'SgaAutho.ini',
             'SgaAutho.pwd',
             'SgaAutho.pwl',
             'sl.dat'
         ]
+        if 'out_type' in default_parameters:
+            if default_parameters['out_type'] == 'sga':
+                test_files.append('SgaFileCaptureServer.ini')
+                test_files.append('SgaFileQueryPwd.ini')
         for f_i in range(len(test_files)):
             test_files[f_i] = resolve_path(str(pathlib.Path(test_cases_path, test_case).resolve()), test_files[f_i])
             if test_files[f_i]['path'] != test_files[f_i]['o_path']:
@@ -166,26 +229,6 @@ try:
                            text_level='DEBUG', foreground_color='light cyan')
             else:
                 logger.log(f'{tab}{test_case} - {tab}test_file : {test_files[f_i]["path"]}', text_level='DEBUG')
-
-        logger.log(f'{tab}{test_case} - parameters:', text_level='DEBUG', foreground_color='light blue')
-        default_parameters = {
-            'user': 'bssap',
-            'password': 'Bssap01',
-            'reason': 'testing',
-            'log': str(pathlib.Path(out_resolved['path'], 'log.log').resolve()),
-            'filter': str(pathlib.Path(bin_path, 'testFilter.CdrFilt').resolve()),
-            'out_type': 'txt',
-            'out': str(pathlib.Path(out_resolved['path'], 'out.txt').resolve())
-        }
-        command_list = []
-        for parameter in command_yaml['parameters']:
-            for key in parameter:
-                if parameter[key].startswith('{{') and parameter[key].endswith('}}'):
-                    parameter[key] = parameter[key][2:-2].strip()
-                    parameter[key] = eval(parameter[key])
-                command_list.append(f'-{key}')
-                command_list.append(parameter[key])
-                logger.log(f'{tab}{test_case} - {tab}{key} : {parameter[key]}', text_level='DEBUG')
 
         if "description" in command_yaml:
             logger.log(f'{tab}{test_case} - {command_yaml["description"]}', text_level='INFO',
@@ -255,6 +298,26 @@ try:
         logger.log(f'{tab}{test_case} - start {sgacdrqueryserver_name}', text_level='DEBUG',
                    foreground_color='light blue')
 
+        # start sgafilecaptureserver
+        if 'out_type' in default_parameters:
+            if default_parameters['out_type'] == 'sga':
+                sgafilecaptureserver_name = 'SgaFileCaptureServer'
+                sgafilecaptureserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgafilecaptureserver_name}*.log')]
+                for log in sgafilecaptureserver_logs:
+                    os.remove(str(log))
+                sgafilecaptureserver_ini_file = str(pathlib.Path(bin_path, sgafilecaptureserver_name + '.ini').resolve())
+                sgafilecaptureserver_ini = read_ini_file(sgafilecaptureserver_ini_file)
+                sgafilecaptureserver_ini = modify_ini_content(ini_content=sgafilecaptureserver_ini, section='Advanced',
+                                                           parameter='sLogFilesPath', value='.')
+                sgafilecaptureserver_ini = modify_ini_content(ini_content=sgafilecaptureserver_ini, section='Advanced',
+                                                           parameter='sSgaFilesPath_UpperCaseSiglinks', value=str(in_resolved['path']))
+                write_ini_file(sgafilecaptureserver_ini, sgafilecaptureserver_ini_file)
+                sgafilecaptureserver = ControlSgaFileCaptureServer(cterm_interface=cterm, path=bin_path,
+                                                             app=f'{sgafilecaptureserver_name}.exe')
+                sgafilecaptureserver.start()
+                logger.log(f'{tab}{test_case} - start {sgafilecaptureserver_name}', text_level='DEBUG',
+                           foreground_color='light blue')
+
         # start sgacdrviewer
         sgacdrviewer_name = 'SgaCDRViewer'
         sgacdrviewer = str(pathlib.Path(bin_path, sgacdrviewer_name + '.exe').resolve())
@@ -262,6 +325,17 @@ try:
         command_list.insert(0, sgacdrviewer)
         process = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.communicate()
+
+        # stop sgafilecaptureserver
+        if 'out_type' in default_parameters:
+            if default_parameters['out_type'] == 'sga':
+                sgafilecaptureserver.stop()
+                sgafilecaptureserver_logs = [p for p in pathlib.Path(bin_path).rglob(f'{sgafilecaptureserver_name}*.log')]
+                for log in sgafilecaptureserver_logs:
+                    debug_file = str(pathlib.Path(debug_resolved['path'], log.name).resolve())
+                    shutil.move(str(log), debug_file)
+                logger.log(f'{tab}{test_case} - stop {sgafilecaptureserver_name}', text_level='DEBUG',
+                           foreground_color='light blue')
 
         # stop sgacdrqueryserver
         sgacdrqueryserver.stop()

@@ -108,3 +108,6 @@ class ControlSgaAutho(Control):
         except Exception as e:
             raise Exception('{}.{}() {}: {}'.format(
                 self.__class__.__name__, currentframe().f_code.co_name, e.__class__.__name__, e))
+
+class ControlSgaFileCaptureServer(Control):
+    pass

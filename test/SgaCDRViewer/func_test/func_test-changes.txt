@@ -1,3 +1,8 @@
+## [0.0.5] - 2020-06-22
+### Added
+- added clean argument
+- added sga capture option
+
 ## [0.0.4] - 2020-06-08
 ### Added
 - added command line arguments: help, select
